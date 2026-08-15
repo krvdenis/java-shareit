@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.user.dao.UserRepository;
 import ru.practicum.shareit.user.dto.PatchUserRequest;
 import ru.practicum.shareit.user.dto.UserDto;
@@ -22,10 +21,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto createUser(UserDto userDto) {
-        if (userDto == null) {
-            log.warn("Попытка добавить пользователя с пустыми данными");
-            throw new ValidationException("Невозможно добавить пользователя с пустыми данными");
-        }
         log.debug("Попытка зарегистрировать нового пользователя: {}", userDto);
         User user = UserMapper.mapToUser(userDto);
         userDto = UserMapper.mapToUserDto(userRepository.create(user));

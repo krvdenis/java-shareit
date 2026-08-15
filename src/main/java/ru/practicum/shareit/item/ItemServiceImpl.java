@@ -29,10 +29,6 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto createItem(long userId, ItemDto itemDto) {
-        if (itemDto == null) {
-            log.warn("Попытка добавить вещь с пустыми данными");
-            throw new ValidationException("Невозможно добавить вещь с пустыми данными");
-        }
         log.debug("Попытка зарегистрировать новую вещь: {}", itemDto);
         User user = UserMapper.mapToUser(userService.getUserById(userId));
         Item item = ItemMapper.mapToItem(itemDto);
