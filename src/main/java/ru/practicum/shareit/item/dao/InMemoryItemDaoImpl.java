@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 
 @Repository
 @Slf4j
-public class InMemoryItemRepositoryImpl implements ItemRepository {
+public class InMemoryItemDaoImpl implements ItemDao {
     private final AtomicLong nextId = new AtomicLong(1);
     private final Map<Long, List<Item>> itemOfUsers = new HashMap<>();
     private final Map<Long, Item> itemsById = new HashMap<>();
@@ -61,7 +61,7 @@ public class InMemoryItemRepositoryImpl implements ItemRepository {
     }
 
     @Override
-    public List<Item> searchByTest(long userId, String text) {
+    public List<Item> searchByText(long userId, String text) {
         log.info("userId = {}", userId);
         log.info("text = {}", text);
         if (text == null || text.isBlank()) {

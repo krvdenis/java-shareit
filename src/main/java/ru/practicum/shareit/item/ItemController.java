@@ -12,8 +12,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.PatchItemRequest;
+import ru.practicum.shareit.item.dto.*;
 
 import java.util.List;
 
@@ -25,13 +24,22 @@ import java.util.List;
 @RequestMapping("/items")
 @RequiredArgsConstructor
 public class ItemController {
-    public static final String X_SHARER_USER_ID = "X-Sharer-User-Id";
+    private static final String X_SHARER_USER_ID = "X-Sharer-User-Id";
     private final ItemService itemService;
 
     @PostMapping
-    public ItemDto create(@RequestHeader(X_SHARER_USER_ID) long userId, @RequestBody @Valid ItemDto itemDto) {
-        log.info("Поступил запрос на создание вещи: {}. Отправил запрос пользователь с ID: {}.", itemDto, userId);
-        return itemService.createItem(userId, itemDto);
+    public ItemDto createItem(@RequestHeader(X_SHARER_USER_ID) Long userId,
+                              @RequestBody @Valid NewItemRequest newItemDto) {
+        log.info("Поступил запрос на создание вещи: {}. Отправил запрос пользователь с ID: {}.", newItemDto, userId);
+        return itemService.createItem(userId, newItemDto);
+    }
+
+    @PostMapping("/{itemId}/comment")
+    public CommentDto createCommentForItem(@RequestHeader(X_SHARER_USER_ID) Long userId, @PathVariable Long itemId,
+                                           @RequestBody @Valid NewCommentDto commentDto) {
+        log.info("Поступил запрос на создание коммента: {}. Отправил запрос пользователь с ID: {}.", commentDto,
+                userId);
+        return itemService.createCommentForItem(userId, itemId, commentDto);
     }
 
     @PatchMapping("/{itemId}")
@@ -49,7 +57,7 @@ public class ItemController {
     }
 
     @GetMapping
-    public List<ItemDto> getAll(@RequestHeader(X_SHARER_USER_ID) long userId) {
+    public List<ItemWithBookingDatesDto> getAll(@RequestHeader(X_SHARER_USER_ID) long userId) {
         log.info("Поступил запрос на получение всех вещей. Отправил запрос пользователь с ID: {}.", userId);
         return itemService.getAllItems(userId);
     }

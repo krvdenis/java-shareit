@@ -5,7 +5,7 @@ import ru.practicum.shareit.item.model.Item;
 import java.util.List;
 import java.util.Optional;
 
-public interface ItemRepository {
+public interface ItemDao {
 
     Item create(long userId, Item item);
 
@@ -15,5 +15,5 @@ public interface ItemRepository {
 
     List<Item> getAll(long userId);
 
-    List<Item> searchByTest(long userId, String text);
+    List<Item> searchByText(long userId, String text);
 }

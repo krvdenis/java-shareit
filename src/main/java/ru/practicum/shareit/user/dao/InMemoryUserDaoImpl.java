@@ -13,7 +13,7 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Repository
-public class InMemoryUserRepositoryImpl implements UserRepository {
+public class InMemoryUserDaoImpl implements UserDao {
     private final AtomicLong nextId = new AtomicLong(1);
     private final Map<Long, User> users = new HashMap<>();
 

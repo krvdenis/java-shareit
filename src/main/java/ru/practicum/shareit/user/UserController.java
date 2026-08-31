@@ -36,7 +36,7 @@ public class UserController {
     }
 
     @PatchMapping("/{userId}")
-    public UserDto patch(@PathVariable long userId, @RequestBody @Valid PatchUserRequest newUser) {
+    public UserDto patch(@PathVariable long userId, @RequestBody @Valid PatchUserRequest newUser) { //исправить на Long
         log.info("Поступил запрос на обновление пользователя: {}", newUser);
         return userService.patchUser(userId, newUser);
     }
@@ -48,14 +48,14 @@ public class UserController {
     }
 
     @GetMapping("/{userId}")
-    public UserDto getById(@PathVariable long userId) {
+    public UserDto getById(@PathVariable long userId) { //исправить на Long
         log.info("Поступил запрос на поиск пользователя с ID: {}", userId);
         return userService.getUserById(userId);
     }
 
     @DeleteMapping("/{userId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable long userId) {
+    public void delete(@PathVariable long userId) { //исправить на Long
         log.info("Поступил запрос на удаление пользователя с ID: {}", userId);
         userService.deleteUser(userId);
     }
