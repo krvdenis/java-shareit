@@ -56,10 +56,14 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public BookingDto getBookingById(Long userId, Long bookingId) {
+        log.debug("Попытка получить информацию о бронировании с ID: {}", bookingId);
         Booking booking = repository.findById(bookingId)
                 .orElseThrow(() -> new NotFoundException("Бронирование с ID %d не найден".formatted(bookingId)));
+
         if (isOwner(userId, booking) || isBooker(userId, booking)) {
-            return BookingDto.from(booking);
+            BookingDto bookingDto = BookingDto.from(booking);
+            log.info("Отправлена информация бронировании вещи c ID: {}", bookingDto.getId());
+            return bookingDto;
         } else {
             throw new NoAccessException("Только владелец вещи или автор бронирования может получить данные о" +
                     " конкретном бронировании");
@@ -68,8 +72,10 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public List<BookingDto> getBookingsByBookerId(Long userId, String state) {
+        log.debug("Попытка получить список всех бронирований пользователя с ID:{}", userId);
         State stateStatus = State.from(state);
         List<Booking> bookings;
+
         if (stateStatus == null) {
             throw new ValidationException("Неверный параметр запроса");
         }
@@ -84,13 +90,16 @@ public class BookingServiceImpl implements BookingService {
             default -> throw new ValidationException("Обработан неизвестный статус: " + stateStatus);
         }
 
-        return bookings.stream()
+        List<BookingDto> bookingDtos = bookings.stream()
                 .map(BookingDto::from)
                 .collect(Collectors.toList());
+        log.info("Отправлен список из {} сущностей бронирования", bookingDtos.size());
+        return bookingDtos;
     }
 
     @Override
     public List<BookingDto> getBookingsByOwnerId(Long ownerId, String state) {
+        log.debug("Попытка получить список всех бронирований у пользователя с ID:{}", ownerId);
         if (!itemService.hasItems(ownerId)) {
             throw new NotFoundException("За вами не закреплено ни одной вещи");
         }
@@ -111,19 +120,24 @@ public class BookingServiceImpl implements BookingService {
             default -> throw new ValidationException("Обработан неизвестный статус: " + stateStatus);
         }
 
-        return bookings.stream()
+        List<BookingDto> bookingDtos = bookings.stream()
                 .map(BookingDto::from)
                 .collect(Collectors.toList());
+        log.info("Отправлен список из {} сущностей бронирования", bookingDtos.size());
+        return bookingDtos;
     }
 
     @Override
     @Transactional
     public BookingDto approveBookingStatus(Long userId, Long bookingId) {
+        log.debug("Попытка подтвердить бронирование с ID {} владельцем с ID {}", bookingId, userId);
         Booking booking = repository.findById(bookingId)
                 .orElseThrow(() -> new NotFoundException("Бронирование с ID %d не найден".formatted(bookingId)));
         if (isOwner(userId, booking)) {
             booking.setStatus(BookingStatus.APPROVED);
-            return BookingDto.from(repository.save(booking));
+            BookingDto bookingDto = BookingDto.from(repository.save(booking));
+            log.info("Подтверждение бронирования завершено");
+            return bookingDto;
         } else {
             throw new NoAccessException("Только владелец вещи может подтверждать бронирование");
         }
@@ -132,25 +146,31 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @Transactional
     public BookingDto rejectBookingStatus(Long userId, Long bookingId) {
+        log.debug("Попытка отклонить бронирование с ID {} владельцем с ID {}", bookingId, userId);
         Booking booking = repository.findById(bookingId)
                 .orElseThrow(() -> new NotFoundException("Бронирование с ID %d не найден".formatted(bookingId)));
         if (isOwner(userId, booking)) {
             booking.setStatus(BookingStatus.REJECTED);
-            return BookingDto.from(repository.save(booking));
+            BookingDto bookingDto = BookingDto.from(repository.save(booking));
+            log.info("Отклонение бронирования завершено");
+            return bookingDto;
         } else {
             throw new NoAccessException("Только владелец вещи может подтверждать бронирование");
         }
     }
 
     private boolean isOwner(Long userId, Booking booking) {
+        log.debug("Проверяется, является ли пользователь с ID {} собственником", userId);
         return booking.getItem().getOwner().getId().equals(userId);
     }
 
     private boolean isBooker(Long userId, Booking booking) {
+        log.debug("Проверяется, является ли пользователь с ID {} инициатором бронирования", userId);
         return booking.getBooker().getId().equals(userId);
     }
 
     private void isValid(NewBookingDtoRequest dtoRequest) {
+        log.debug("Проверка валидности дат бронирования");
         if (dtoRequest.getEnd().isBefore(LocalDateTime.now())) {
             throw new ValidationException("Дата окончания бронирования не может быть в прошлом.");
         }

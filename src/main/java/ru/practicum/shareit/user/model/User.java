@@ -1,9 +1,15 @@
 package ru.practicum.shareit.user.model;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import lombok.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
@@ -12,12 +18,11 @@ import ru.practicum.shareit.request.model.ItemRequest;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * TODO Sprint add-controllers.
- */
 @Entity
 @Table(name = "users")
-@Getter @Setter @ToString
+@Getter
+@Setter
+@ToString
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -3,12 +3,11 @@ package ru.practicum.shareit.item;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import ru.practicum.shareit.item.dto.ItemWithBookingDatesDto;
+import ru.practicum.shareit.item.dto.ItemWithBookingDates;
 import ru.practicum.shareit.item.model.Item;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 public interface ItemRepository extends JpaRepository<Item, Long> {
@@ -36,7 +35,7 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
 
     boolean existsByOwnerId(Long ownerId);
 
-    @Query("select new ru.practicum.shareit.item.dto.ItemWithBookingDatesDto(" +
+    @Query("select new ru.practicum.shareit.item.dto.ItemWithBookingDates(" +
             "  i.id, " +
             "  i.name, " +
             "  i.description, " +
@@ -44,5 +43,5 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
             "  (select max(b.startTime) from Booking b where b.item = i and b.startTime < CURRENT_TIMESTAMP), " +
             "  (select min(b.startTime) from Booking b where b.item = i and b.startTime > CURRENT_TIMESTAMP)" +
             ") from Item i where i.id IN :itemIds")
-    List<ItemWithBookingDatesDto> findWithBookingDates(@Param("itemIds") List<Long> itemIds);
+    List<ItemWithBookingDates> findWithBookingDates(@Param("itemIds") List<Long> itemIds);
 }

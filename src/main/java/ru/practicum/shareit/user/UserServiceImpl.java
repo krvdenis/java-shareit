@@ -7,13 +7,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exception.DuplicateDataException;
 import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.user.dto.PatchUserRequest;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.model.User;
 
-import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,6 +27,7 @@ public class UserServiceImpl implements UserService {
     public UserDto createUser(UserDto userDto) {
         log.debug("Попытка зарегистрировать нового пользователя: {}", userDto);
         User user = UserMapper.mapToUser(userDto);
+
         try {
             userDto = UserMapper.mapToUserDto(repository.save(user));
         } catch (DataIntegrityViolationException e) {
@@ -42,10 +41,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserDto patchUser(long userId, PatchUserRequest newUser) {
+    public UserDto patchUser(Long userId, PatchUserRequest newUser) {
         log.debug("Попытка внести изменения в данные пользователя {}", newUser);
         User user = repository.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь с ID " + userId
                 + " не найден"));
+
         UserMapper.patchUserFields(user, newUser);
         try {
             User patchedUser = repository.save(user);
@@ -68,12 +68,11 @@ public class UserServiceImpl implements UserService {
                 .map(UserMapper::mapToUserDto)
                 .collect(Collectors.toList());
         log.info("Отправлен список из {} пользователей", usersDto.size());
-
         return usersDto;
     }
 
     @Override
-    public UserDto getUserById(long userId) {
+    public UserDto getUserById(Long userId) {
         log.debug("Попытка получить пользователя: userId={}", userId);
         User user = repository.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь с ID " + userId
                 + " не найден"));
@@ -82,7 +81,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void deleteUser(long userId) {
+    public void deleteUser(Long userId) {
         log.debug("Попытка удаления пользователя с ID: {}", userId);
         repository.deleteById(userId);
         log.info("Пользователь с ID: {} - удалён.", userId);

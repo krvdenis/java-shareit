@@ -4,11 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Data
 @AllArgsConstructor
-public class ItemWithBookingDatesDto {
+public class ItemWithBookingDates {
     private Long id;
     private String name;
     private String description;
@@ -16,4 +15,3 @@ public class ItemWithBookingDatesDto {
     private LocalDateTime lastBooking;
     private LocalDateTime nextBooking;
 }
-

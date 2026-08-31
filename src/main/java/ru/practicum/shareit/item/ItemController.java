@@ -12,13 +12,14 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import ru.practicum.shareit.item.dto.*;
+import ru.practicum.shareit.item.dto.CommentDto;
+import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.NewCommentDto;
+import ru.practicum.shareit.item.dto.NewItemRequest;
+import ru.practicum.shareit.item.dto.PatchItemRequest;
 
 import java.util.List;
 
-/**
- * TODO Sprint add-controllers.
- */
 @RestController
 @Slf4j
 @RequestMapping("/items")
@@ -43,7 +44,7 @@ public class ItemController {
     }
 
     @PatchMapping("/{itemId}")
-    public ItemDto patch(@RequestHeader(X_SHARER_USER_ID) long userId, @PathVariable long itemId,
+    public ItemDto patch(@RequestHeader(X_SHARER_USER_ID) Long userId, @PathVariable Long itemId,
                          @RequestBody @Valid PatchItemRequest newItem) {
         log.info("Поступил запрос на изменение характеристик вещи: {} с ID {}. Отправил запрос пользователь с ID: {}.",
                 newItem, itemId, userId);
@@ -51,19 +52,19 @@ public class ItemController {
     }
 
     @GetMapping("/{itemId}")
-    public ItemDto getById(@RequestHeader(X_SHARER_USER_ID) long userId, @PathVariable long itemId) {
+    public ItemDto getById(@RequestHeader(X_SHARER_USER_ID) Long userId, @PathVariable Long itemId) {
         log.info("Поступил запрос на получение вещи с ID: {}. Отправил запрос пользователь с ID: {}.", itemId, userId);
         return itemService.getItemById(userId, itemId);
     }
 
     @GetMapping
-    public List<ItemWithBookingDatesDto> getAll(@RequestHeader(X_SHARER_USER_ID) long userId) {
+    public List<ItemDto> getAll(@RequestHeader(X_SHARER_USER_ID) Long userId) {
         log.info("Поступил запрос на получение всех вещей. Отправил запрос пользователь с ID: {}.", userId);
         return itemService.getAllItems(userId);
     }
 
     @GetMapping("/search")
-    public List<ItemDto> searchByText(@RequestHeader(X_SHARER_USER_ID) long userId, @RequestParam String text) {
+    public List<ItemDto> searchByText(@RequestHeader(X_SHARER_USER_ID) Long userId, @RequestParam String text) {
         log.info("Поступил запрос на поиск вещи с text: {}. Отправил запрос пользователь с ID: {}.", text, userId);
         return itemService.searchItemByText(userId, text);
     }

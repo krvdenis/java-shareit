@@ -65,16 +65,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<String> handleResponseStatusException(ResponseStatusException ex) {
         log.warn("Бизнес-правило нарушено: {}", ex.getMessage());
-
         return new ResponseEntity<>(ex.getMessage(), ex.getStatusCode());
     }
 
     @ExceptionHandler(MissingRequestHeaderException.class)
     public ResponseEntity<ErrorResponse> handleMissingHeader(MissingRequestHeaderException e) {
         String headerName = e.getHeaderName();
-
         log.warn("Клиент не передал обязательный заголовок: {}", headerName);
-
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse("Пожалуйста, добавьте заголовок '" + headerName + "' в ваш запрос"));
     }
