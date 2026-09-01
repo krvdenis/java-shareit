@@ -20,7 +20,5 @@ public interface ItemService {
 
     List<ItemDto> searchItemByText(Long userId, String text);
 
-    boolean hasItems(Long userId);
-
     CommentDto createCommentForItem(Long userId, Long itemId, NewCommentDto commentDto);
 }

@@ -2,8 +2,8 @@ package ru.practicum.shareit.item.mapper;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.NewItemRequest;
 import ru.practicum.shareit.item.dto.PatchItemRequest;
 import ru.practicum.shareit.item.model.Item;
 
@@ -19,7 +19,7 @@ public final class ItemMapper {
         dto.setDescription(item.getDescription());
         dto.setAvailable(item.getAvailable());
         dto.setComments(new ArrayList<>(item.getComments().stream()
-                .map(CommentDto::from)
+                .map(CommentMapper::mapToCommentDto)
                 .collect(Collectors.toList())));
         return dto;
     }
@@ -30,6 +30,14 @@ public final class ItemMapper {
         item.setName(itemDto.getName());
         item.setDescription(itemDto.getDescription());
         item.setAvailable(itemDto.getAvailable());
+        return item;
+    }
+
+    public static Item mapToItem(NewItemRequest newItemRequest) {
+        Item item = new Item();
+        item.setName(newItemRequest.getName());
+        item.setDescription(newItemRequest.getDescription());
+        item.setAvailable(newItemRequest.getAvailable());
         return item;
     }
 

@@ -39,11 +39,7 @@ public class BookingController {
                                           @PathVariable Long bookingId) {
         log.info("Поступил запрос на изменение статуса бронирования: {} на {}. Отправил запрос пользователь с ID: {}.",
                 bookingId, status, userId);
-        if (status == true) {
-            return bookingService.approveBookingStatus(userId, bookingId);
-        } else {
-            return bookingService.rejectBookingStatus(userId, bookingId);
-        }
+        return bookingService.updateBookingStatus(userId, bookingId, status);
     }
 
     @GetMapping("/{bookingId}")
@@ -56,7 +52,7 @@ public class BookingController {
     @GetMapping
     public List<BookingDto> getAllByBookerId(
             @RequestHeader(X_SHARER_USER_ID) Long userId,
-            @RequestParam(required = false, defaultValue = "ALL") String state) {
+            @RequestParam(required = false, defaultValue = "ALL") State state) {
         log.info("Поступил запрос на получение информации о забронированных вещах. " +
                 "Отправил запрос пользователь с ID: {}.", userId);
         return bookingService.getBookingsByBookerId(userId, state);
@@ -66,7 +62,7 @@ public class BookingController {
     @GetMapping("/owner")
     public List<BookingDto> getAllByOwnerId(
             @RequestHeader(X_SHARER_USER_ID) Long userId,
-            @RequestParam(required = false, defaultValue = "ALL") String state) {
+            @RequestParam(required = false, defaultValue = "ALL") State state) {
         log.info("Поступил запрос на получение информации о забронированных вещах данного пользователя. " +
                 "Отправил запрос пользователь с ID: {}.", userId);
         return bookingService.getBookingsByOwnerId(userId, state);

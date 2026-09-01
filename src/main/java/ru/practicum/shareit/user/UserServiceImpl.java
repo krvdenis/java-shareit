@@ -2,10 +2,8 @@ package ru.practicum.shareit.user;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.shareit.exception.DuplicateDataException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.user.dto.PatchUserRequest;
 import ru.practicum.shareit.user.dto.UserDto;
@@ -27,14 +25,7 @@ public class UserServiceImpl implements UserService {
     public UserDto createUser(UserDto userDto) {
         log.debug("Попытка зарегистрировать нового пользователя: {}", userDto);
         User user = UserMapper.mapToUser(userDto);
-
-        try {
-            userDto = UserMapper.mapToUserDto(repository.save(user));
-        } catch (DataIntegrityViolationException e) {
-            if (e.getMessage().contains("email")) {
-                throw new DuplicateDataException("Email уже занят");
-            }
-        }
+        userDto = UserMapper.mapToUserDto(repository.save(user));
         log.info("Пользователь {} успешно зарегистрирован под ID {}", userDto.getName(), userDto.getId());
         return userDto;
     }
@@ -47,18 +38,9 @@ public class UserServiceImpl implements UserService {
                 + " не найден"));
 
         UserMapper.patchUserFields(user, newUser);
-        try {
-            User patchedUser = repository.save(user);
-            repository.flush();
-            log.info("Данные пользователя с ID {} успешно обновлены", patchedUser.getId());
-            return UserMapper.mapToUserDto(patchedUser);
-        } catch (DataIntegrityViolationException e) {
-            if (e.getMessage().contains("email")) {
-                throw new DuplicateDataException("Email уже занят");
-            }
-            log.error("Произошла непредвиденная ошибка целостности данных при обновлении пользователя", e);
-            throw new IllegalStateException("Произошла непредвиденная ошибка базы данных", e);
-        }
+        User patchedUser = repository.save(user);
+        log.info("Данные пользователя с ID {} успешно обновлены", patchedUser.getId());
+        return UserMapper.mapToUserDto(patchedUser);
     }
 
     @Override
@@ -85,5 +67,10 @@ public class UserServiceImpl implements UserService {
         log.debug("Попытка удаления пользователя с ID: {}", userId);
         repository.deleteById(userId);
         log.info("Пользователь с ID: {} - удалён.", userId);
+    }
+
+    @Override
+    public boolean existsById(Long userId) {
+        return repository.existsById(userId);
     }
 }

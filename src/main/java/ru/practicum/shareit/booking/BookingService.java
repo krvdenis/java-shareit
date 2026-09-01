@@ -11,11 +11,9 @@ public interface BookingService {
 
     BookingDto getBookingById(Long userId, Long bookingId);
 
-    BookingDto approveBookingStatus(Long userId, Long bookingId);
+    BookingDto updateBookingStatus(Long userId, Long bookingId, Boolean status);
 
-    BookingDto rejectBookingStatus(Long userId, Long bookingId);
+    List<BookingDto> getBookingsByBookerId(Long userId, State state);
 
-    List<BookingDto> getBookingsByBookerId(Long userId, String state);
-
-    List<BookingDto> getBookingsByOwnerId(Long userId, String state);
+    List<BookingDto> getBookingsByOwnerId(Long userId, State state);
 }

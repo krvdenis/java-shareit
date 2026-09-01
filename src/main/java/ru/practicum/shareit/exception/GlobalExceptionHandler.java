@@ -1,6 +1,7 @@
 package ru.practicum.shareit.exception;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -74,6 +75,14 @@ public class GlobalExceptionHandler {
         log.warn("Клиент не передал обязательный заголовок: {}", headerName);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse("Пожалуйста, добавьте заголовок '" + headerName + "' в ваш запрос"));
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResponse> handleDataIntegrityViolation(DataIntegrityViolationException e) {
+        log.warn("Нарушение целостности данных (DataIntegrityViolationException)");
+        ErrorResponse errorResponse = new ErrorResponse("Произошла ошибка при сохранении данных из-за нарушения " +
+                "правил базы данных.");
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
     }
 
     @ExceptionHandler(Throwable.class)

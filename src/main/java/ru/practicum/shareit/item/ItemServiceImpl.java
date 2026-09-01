@@ -10,12 +10,8 @@ import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.BookingStatus;
 import ru.practicum.shareit.exception.NoAccessException;
 import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.item.dto.CommentDto;
-import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.ItemWithBookingDates;
-import ru.practicum.shareit.item.dto.NewCommentDto;
-import ru.practicum.shareit.item.dto.NewItemRequest;
-import ru.practicum.shareit.item.dto.PatchItemRequest;
+import ru.practicum.shareit.item.dto.*;
+import ru.practicum.shareit.item.mapper.CommentMapper;
 import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
@@ -25,12 +21,7 @@ import ru.practicum.shareit.user.model.User;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -48,7 +39,7 @@ public class ItemServiceImpl implements ItemService {
     public ItemDto createItem(Long userId, NewItemRequest newItemDto) {
         log.debug("Попытка зарегистрировать новую вещь: {}", newItemDto);
         User user = UserMapper.mapToUser(userService.getUserById(userId));
-        Item item = NewItemRequest.to(newItemDto);
+        Item item = ItemMapper.mapToItem(newItemDto);
         item.setOwner(user);
         ItemDto itemDto = ItemMapper.mapToItemDto(itemRepository.save(item));
         log.info("Вещь {} успешно добавлена под ID {}", itemDto.getName(), itemDto.getId());
@@ -74,7 +65,7 @@ public class ItemServiceImpl implements ItemService {
 
         comment.setItem(item);
         comment.setAuthor(user);
-        CommentDto commentDto = CommentDto.from(commentRepository.save(comment));
+        CommentDto commentDto = CommentMapper.mapToCommentDto(commentRepository.save(comment));
         log.info("Отзыв {} успешно добавлен под ID {}", commentDto.getText(), commentDto.getId());
 
         return commentDto;
@@ -105,19 +96,27 @@ public class ItemServiceImpl implements ItemService {
         log.info("Получен Item с ID {} c списком из {} отзывов", item.getId(), item.getComments().size());
 
         ItemDto itemDto = ItemMapper.mapToItemDto(item);
-        List<Object[]> result = itemRepository.findLastAndNextBookingDates(itemId, LocalDateTime.now());
-        if (!result.isEmpty()) {
-            Object[] bookingDates = result.get(0);
+//        List<Object[]> result = itemRepository.findLastAndNextBookingDates(itemId, LocalDateTime.now());
+        Object[] bookingDates = itemRepository.findLastAndNextBookingDates(itemId, LocalDateTime.now());
+
+//        if (!result.isEmpty()) {
+//            Object[] bookingDates = result.get(0);
+        if (bookingDates != null && bookingDates.length == 2) {
             if (bookingDates[0] != null) {
-                Timestamp tsLast = (Timestamp) bookingDates[0];
-                itemDto.setLastBooking(tsLast.toLocalDateTime());
+                Object rawValue = bookingDates[0];
+                if (rawValue instanceof Timestamp ts) {
+                    itemDto.setLastBooking(ts.toLocalDateTime()); // Конвертируем в современный тип
+                }
             } else {
                 itemDto.setLastBooking(null);
             }
 
             if (bookingDates[1] != null) {
-                Timestamp tsNext = (Timestamp) bookingDates[1];
-                itemDto.setNextBooking(tsNext.toLocalDateTime());
+                Object rawValue = bookingDates[1];
+                if (rawValue instanceof Timestamp ts) {
+                    itemDto.setNextBooking(ts.toLocalDateTime());
+
+                }
             } else {
                 itemDto.setNextBooking(null);
             }
@@ -154,7 +153,7 @@ public class ItemServiceImpl implements ItemService {
 
                     if (commentList != null && !commentList.isEmpty()) {
                         dto.setComments(new ArrayList<>(commentList.stream()
-                                .map(CommentDto::from)
+                                .map(CommentMapper::mapToCommentDto)
                                 .collect(Collectors.toList())));
                     } else {
                         dto.setComments(Collections.emptyList());
@@ -177,11 +176,5 @@ public class ItemServiceImpl implements ItemService {
                 .collect(Collectors.toList());
         log.info("Отправлен список из {} вещей", itemsDto.size());
         return itemsDto;
-    }
-
-    @Override
-    public boolean hasItems(Long userId) {
-        log.debug("Проверка на наличии хотя бы одной вещи у пользователя с ID {}", userId);
-        return itemRepository.existsByOwnerId(userId);
     }
 }

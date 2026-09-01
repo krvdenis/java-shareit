@@ -24,7 +24,7 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
             "     and b.start_time > :now) as next_booking " +
             "from items i where i.id = :itemId",
             nativeQuery = true)
-    List<Object[]> findLastAndNextBookingDates(@Param("itemId") Long itemId, @Param("now") LocalDateTime now);
+    Object[] findLastAndNextBookingDates(@Param("itemId") Long itemId, @Param("now") LocalDateTime now);
 
     List<Item> findByOwnerId(Long userId);
 
@@ -32,8 +32,6 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
             "where i.available = true and upper(i.name) like upper(concat('%', ?1, '%')) " +
             " or upper(i.description) like upper(concat('%', ?1, '%')) ")
     List<Item> searchByText(@Param("text") String text);
-
-    boolean existsByOwnerId(Long ownerId);
 
     @Query("select new ru.practicum.shareit.item.dto.ItemWithBookingDates(" +
             "  i.id, " +
