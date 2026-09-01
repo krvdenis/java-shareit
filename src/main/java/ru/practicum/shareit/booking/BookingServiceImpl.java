@@ -42,7 +42,7 @@ public class BookingServiceImpl implements BookingService {
         isValid(dtoRequest);
         long conflict = repository.countConflicts(dtoRequest.getItemId(), dtoRequest.getStart(), dtoRequest.getEnd());
         if (conflict > 0) {
-            throw new BookingConflictException("Невозможно забронировать: а это время уже есть активная бронь");
+            throw new BookingConflictException("Невозможно забронировать: на это время уже есть активная бронь");
         }
         if (!item.getAvailable()) {
             throw new BookingConflictException("Данная вещь недоступна для бронирования");

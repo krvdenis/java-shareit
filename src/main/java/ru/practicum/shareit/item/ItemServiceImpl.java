@@ -136,7 +136,7 @@ public class ItemServiceImpl implements ItemService {
                         LocalDateTime.now()).stream()
                 .collect(Collectors.toMap(BookingDates::getItemId, b -> b));
         List<ItemDto> itemDtos = items.stream()
-                .map(item -> { //здесь надо исп-ть маппер
+                .map(item -> {
                     List<Comment> commentList = commentsMap.get(item.getId());
                     BookingDates lastBooking = lastBookingMap.get(item.getId());
                     BookingDates nextBooking = nextBookingMap.get(item.getId());
