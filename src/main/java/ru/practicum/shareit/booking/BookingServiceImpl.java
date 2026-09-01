@@ -40,6 +40,10 @@ public class BookingServiceImpl implements BookingService {
         User user = UserMapper.mapToUser(userService.getUserById(userId));
         Item item = ItemMapper.mapToItem(itemService.getItemById(userId, dtoRequest.getItemId()));
         isValid(dtoRequest);
+        long conflict = repository.countConflicts(dtoRequest.getItemId(), dtoRequest.getStart(), dtoRequest.getEnd());
+        if (conflict > 0) {
+            throw new BookingConflictException("Невозможно забронировать: а это время уже есть активная бронь");
+        }
         if (!item.getAvailable()) {
             throw new BookingConflictException("Данная вещь недоступна для бронирования");
         }

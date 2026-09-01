@@ -2,12 +2,16 @@ package ru.practicum.shareit.item.mapper;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import ru.practicum.shareit.booking.dto.BookingDates;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.NewItemRequest;
 import ru.practicum.shareit.item.dto.PatchItemRequest;
+import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -21,6 +25,29 @@ public final class ItemMapper {
         dto.setComments(new ArrayList<>(item.getComments().stream()
                 .map(CommentMapper::mapToCommentDto)
                 .collect(Collectors.toList())));
+        return dto;
+    }
+
+    public static ItemDto mapToItemDto(Item item, List<Comment> comments, BookingDates lastBooking,
+                                       BookingDates nextBooking) {
+
+        ItemDto dto = new ItemDto();
+        dto.setId(item.getId());
+        dto.setName(item.getName());
+        dto.setDescription(item.getDescription());
+        dto.setAvailable(item.getAvailable());
+
+        if (comments != null) {
+            dto.setComments(comments.stream()
+                    .map(CommentMapper::mapToCommentDto)
+                    .collect(Collectors.toList()));
+        } else {
+            dto.setComments(Collections.emptyList());
+        }
+
+        dto.setLastBooking(lastBooking);
+        dto.setNextBooking(nextBooking);
+
         return dto;
     }
 

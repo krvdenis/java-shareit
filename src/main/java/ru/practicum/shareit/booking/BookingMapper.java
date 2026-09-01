@@ -33,5 +33,4 @@ public final class BookingMapper {
         dto.setStatus(booking.getStatus());
         return dto;
     }
-
 }

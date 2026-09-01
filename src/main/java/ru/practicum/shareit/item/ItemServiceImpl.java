@@ -8,9 +8,14 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.BookingStatus;
+import ru.practicum.shareit.booking.dto.BookingDates;
 import ru.practicum.shareit.exception.NoAccessException;
 import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.item.dto.*;
+import ru.practicum.shareit.item.dto.CommentDto;
+import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.NewCommentDto;
+import ru.practicum.shareit.item.dto.NewItemRequest;
+import ru.practicum.shareit.item.dto.PatchItemRequest;
 import ru.practicum.shareit.item.mapper.CommentMapper;
 import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Comment;
@@ -19,9 +24,13 @@ import ru.practicum.shareit.user.UserService;
 import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.model.User;
 
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -96,31 +105,12 @@ public class ItemServiceImpl implements ItemService {
         log.info("Получен Item с ID {} c списком из {} отзывов", item.getId(), item.getComments().size());
 
         ItemDto itemDto = ItemMapper.mapToItemDto(item);
-//        List<Object[]> result = itemRepository.findLastAndNextBookingDates(itemId, LocalDateTime.now());
-        Object[] bookingDates = itemRepository.findLastAndNextBookingDates(itemId, LocalDateTime.now());
+        Optional<BookingDates> lastBooking = bookingRepository.findLastBooking(itemId,
+                LocalDateTime.now().minusSeconds(3));
+        Optional<BookingDates> nextBooking = bookingRepository.findNextBooking(itemId, LocalDateTime.now());
 
-//        if (!result.isEmpty()) {
-//            Object[] bookingDates = result.get(0);
-        if (bookingDates != null && bookingDates.length == 2) {
-            if (bookingDates[0] != null) {
-                Object rawValue = bookingDates[0];
-                if (rawValue instanceof Timestamp ts) {
-                    itemDto.setLastBooking(ts.toLocalDateTime()); // Конвертируем в современный тип
-                }
-            } else {
-                itemDto.setLastBooking(null);
-            }
-
-            if (bookingDates[1] != null) {
-                Object rawValue = bookingDates[1];
-                if (rawValue instanceof Timestamp ts) {
-                    itemDto.setNextBooking(ts.toLocalDateTime());
-
-                }
-            } else {
-                itemDto.setNextBooking(null);
-            }
-        }
+        itemDto.setLastBooking(lastBooking.orElse(null));
+        itemDto.setNextBooking(nextBooking.orElse(null));
         log.info("Отправлена информация о вещи c ID: {}", itemDto.getId());
         return itemDto;
     }
@@ -135,30 +125,22 @@ public class ItemServiceImpl implements ItemService {
         List<Long> itemIds = items.stream()
                 .map(item -> item.getId())
                 .collect(Collectors.toList());
-        List<ItemWithBookingDates> itemsWithBookingDates = itemRepository.findWithBookingDates(itemIds);
         Map<Long, List<Comment>> commentsMap = commentRepository.findByItemIdInWithItem(itemIds).stream()
                 .collect(Collectors.groupingBy(comment -> comment.getItem().getId()));
 
-        List<ItemDto> itemDtos = itemsWithBookingDates.stream()
-                .map(itemWithDates -> {
-                    ItemDto dto = new ItemDto();
-                    dto.setId(itemWithDates.getId());
-                    dto.setName(itemWithDates.getName());
-                    dto.setDescription(itemWithDates.getDescription());
-                    dto.setAvailable(itemWithDates.getAvailable());
-                    dto.setLastBooking(itemWithDates.getLastBooking());
-                    dto.setNextBooking(itemWithDates.getNextBooking());
+        Map<Long, BookingDates> lastBookingMap = bookingRepository.findLastBookings(itemIds,
+                        LocalDateTime.now().minusSeconds(3)).stream()
+                .collect(Collectors.toMap(BookingDates::getItemId, b -> b));
 
-                    List<Comment> commentList = commentsMap.get(itemWithDates.getId());
-
-                    if (commentList != null && !commentList.isEmpty()) {
-                        dto.setComments(new ArrayList<>(commentList.stream()
-                                .map(CommentMapper::mapToCommentDto)
-                                .collect(Collectors.toList())));
-                    } else {
-                        dto.setComments(Collections.emptyList());
-                    }
-                    return dto;
+        Map<Long, BookingDates> nextBookingMap = bookingRepository.findNextBookings(itemIds,
+                        LocalDateTime.now()).stream()
+                .collect(Collectors.toMap(BookingDates::getItemId, b -> b));
+        List<ItemDto> itemDtos = items.stream()
+                .map(item -> { //здесь надо исп-ть маппер
+                    List<Comment> commentList = commentsMap.get(item.getId());
+                    BookingDates lastBooking = lastBookingMap.get(item.getId());
+                    BookingDates nextBooking = nextBookingMap.get(item.getId());
+                    return ItemMapper.mapToItemDto(item, commentList, lastBooking, nextBooking);
                 })
                 .collect(Collectors.toList());
         log.info("Отправлен список из {} вещей", itemDtos.size());
