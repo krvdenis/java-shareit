@@ -59,7 +59,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public CommentDto createCommentForItem(Long userId, Long itemId, NewCommentDto newCommentDto) {
         log.debug("Попытка добавить новый отзыв: {}", newCommentDto);
-        Comment comment = NewCommentDto.to(newCommentDto);
+        Comment comment = CommentMapper.mapToComment(newCommentDto);
 
         if (!bookingRepository.existsByBookerIdAndEndTimeLessThanAndStatus(userId, comment.getCreated(),
                 BookingStatus.APPROVED)) {
