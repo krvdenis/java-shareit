@@ -2,6 +2,7 @@ package ru.practicum.shareit.user;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exception.NotFoundException;
@@ -46,7 +47,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<UserDto> getAllUsers() {
         log.debug("Попытка получить список всех пользователей");
-        List<UserDto> usersDto = repository.findAll().stream()
+        List<UserDto> usersDto = repository.findAll(Sort.by(Sort.Direction.ASC, "id")).stream()
                 .map(UserMapper::mapToUserDto)
                 .collect(Collectors.toList());
         log.info("Отправлен список из {} пользователей", usersDto.size());
@@ -67,10 +68,5 @@ public class UserServiceImpl implements UserService {
         log.debug("Попытка удаления пользователя с ID: {}", userId);
         repository.deleteById(userId);
         log.info("Пользователь с ID: {} - удалён.", userId);
-    }
-
-    @Override
-    public boolean existsById(Long userId) {
-        return repository.existsById(userId);
     }
 }

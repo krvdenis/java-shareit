@@ -14,10 +14,10 @@ import java.time.LocalDateTime;
 @ToString
 public class NewBookingDtoRequest {
     private Long itemId;
-    @NotNull
+    @NotNull(message = "Дата начала бронирования должна быть заполнена")
     @FutureOrPresent
     private LocalDateTime start;
-    @NotNull
+    @NotNull(message = "Дата конца бронирования должна быть заполнена")
     @Future
     private LocalDateTime end;
 }

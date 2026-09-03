@@ -9,13 +9,16 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ItemRepository extends JpaRepository<Item, Long> {
-    @Query("select i from Item i left join fetch i.comments where i.id = :itemId")
+    @Query("SELECT i FROM Item i " +
+            "LEFT JOIN FETCH i.comments " +
+            "WHERE i.id = :itemId")
     Optional<Item> findByIdWithComments(@Param("itemId") Long itemId);
 
     List<Item> findByOwnerId(Long userId);
 
-    @Query(" select i from Item i " +
-            "where i.available = true and upper(i.name) like upper(concat('%', ?1, '%')) " +
-            " or upper(i.description) like upper(concat('%', ?1, '%')) ")
+    @Query("SELECT i FROM Item i " +
+            "WHERE i.available = TRUE " +
+            "AND UPPER(i.name) LIKE UPPER(CONCAT('%', ?1, '%')) " +
+            "OR UPPER(i.description) LIKE UPPER(CONCAT('%', ?1, '%'))")
     List<Item> searchByText(@Param("text") String text);
 }

@@ -33,7 +33,7 @@ public class UserController {
     }
 
     @PatchMapping("/{userId}")
-    public UserDto patch(@PathVariable Long userId, @RequestBody @Valid PatchUserRequest newUser) { //исправить на Long
+    public UserDto patch(@PathVariable Long userId, @RequestBody @Valid PatchUserRequest newUser) {
         log.info("Поступил запрос на обновление пользователя: {}", newUser);
         return userService.patchUser(userId, newUser);
     }

@@ -3,14 +3,15 @@ package ru.practicum.shareit.item.mapper;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import ru.practicum.shareit.booking.dto.BookingDates;
+import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.NewItemRequest;
 import ru.practicum.shareit.item.dto.PatchItemRequest;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,9 +23,11 @@ public final class ItemMapper {
         dto.setName(item.getName());
         dto.setDescription(item.getDescription());
         dto.setAvailable(item.getAvailable());
-        dto.setComments(new ArrayList<>(item.getComments().stream()
+        List<CommentDto> sortedComments = item.getComments().stream()
+                .sorted(Comparator.comparing(Comment::getCreated).reversed())
                 .map(CommentMapper::mapToCommentDto)
-                .collect(Collectors.toList())));
+                .collect(Collectors.toList());
+        dto.setComments(sortedComments);
         return dto;
     }
 
@@ -49,15 +52,6 @@ public final class ItemMapper {
         dto.setNextBooking(nextBooking);
 
         return dto;
-    }
-
-    public static Item mapToItem(ItemDto itemDto) {
-        Item item = new Item();
-        item.setId(itemDto.getId());
-        item.setName(itemDto.getName());
-        item.setDescription(itemDto.getDescription());
-        item.setAvailable(itemDto.getAvailable());
-        return item;
     }
 
     public static Item mapToItem(NewItemRequest newItemRequest) {

@@ -12,11 +12,9 @@ import ru.practicum.shareit.exception.BookingConflictException;
 import ru.practicum.shareit.exception.NoAccessException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
-import ru.practicum.shareit.item.ItemService;
-import ru.practicum.shareit.item.mapper.ItemMapper;
+import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.user.UserService;
-import ru.practicum.shareit.user.mapper.UserMapper;
+import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.model.User;
 
 import java.util.List;
@@ -31,16 +29,19 @@ import static ru.practicum.shareit.booking.State.WAITING;
 @Transactional(readOnly = true)
 public class BookingServiceImpl implements BookingService {
     private final BookingRepository repository;
-    private final UserService userService;
-    private final ItemService itemService;
+    private final UserRepository userRepository;
+    private final ItemRepository itemRepository;
 
     @Override
     @Transactional
     public BookingDto createBookingRequest(Long userId, NewBookingDtoRequest dtoRequest) {
         log.debug("Попытка оформить новое бронирование: {}", dtoRequest);
-        User user = UserMapper.mapToUser(userService.getUserById(userId));
-        Item item = ItemMapper.mapToItem(itemService.getItemById(userId, dtoRequest.getItemId()));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь с ID " + userId + " не найден"));
+        Item item = itemRepository.findById(dtoRequest.getItemId())
+                .orElseThrow(() -> new NotFoundException("Item с ID %d не найден".formatted(dtoRequest.getItemId())));
         isValid(dtoRequest);
+
         long conflict = repository.countConflicts(dtoRequest.getItemId(), dtoRequest.getStart(), dtoRequest.getEnd());
         if (conflict > 0) {
             throw new BookingConflictException("Невозможно забронировать: на это время уже есть активная бронь");
@@ -61,21 +62,23 @@ public class BookingServiceImpl implements BookingService {
         Booking booking = repository.findById(bookingId)
                 .orElseThrow(() -> new NotFoundException("Бронирование с ID %d не найден".formatted(bookingId)));
 
-        if (isOwner(userId, booking) || isBooker(userId, booking)) {
-            BookingDto bookingDto = BookingMapper.mapToBookingDto(booking);
-            log.info("Отправлена информация бронировании вещи c ID: {}", bookingDto.getId());
-            return bookingDto;
-        } else {
+        if (!isOwner(userId, booking) && !isBooker(userId, booking)) {
             throw new NoAccessException("Только владелец вещи или автор бронирования может получить данные о" +
                     " конкретном бронировании");
         }
+        BookingDto bookingDto = BookingMapper.mapToBookingDto(booking);
+        log.info("Отправлена информация бронировании вещи c ID: {}", bookingDto.getId());
+        return bookingDto;
     }
 
     @Override
     public List<BookingDto> getBookingsByBookerId(Long userId, State state) {
-        log.debug("Попытка получить список всех бронирований пользователя с ID:{}", userId);
-        List<Booking> bookings;
+        log.debug("Попытка получить список всех бронирований пользователем с ID:{}", userId);
+        if (!userRepository.existsById(userId)) {
+            throw new NotFoundException("Пользователя с ID " + userId + " не существует");
+        }
 
+        List<Booking> bookings;
         switch (state) {
             case ALL -> bookings = repository.findByBookerIdOrderByStartTimeDesc(userId);
             case CURRENT -> bookings = repository.findCurrentBookingsByBookerId(userId);
@@ -96,15 +99,11 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public List<BookingDto> getBookingsByOwnerId(Long ownerId, State state) {
         log.debug("Попытка получить список всех бронирований у пользователя с ID:{}", ownerId);
-        if (!userService.existsById(ownerId)) {
+        if (!userRepository.existsById(ownerId)) {
             throw new NotFoundException("Пользователя с ID " + ownerId + " не существует");
         }
 
         List<Booking> bookings;
-        if (state == null) {
-            throw new ValidationException("Неверный параметр запроса");
-        }
-
         switch (state) {
             case ALL -> bookings = repository.findByItemOwnerIdOrderByStartTimeDesc(ownerId);
             case CURRENT -> bookings = repository.findCurrentBookingsByOwnerId(ownerId);
@@ -136,7 +135,7 @@ public class BookingServiceImpl implements BookingService {
         if (!isOwner(userId, booking)) {
             throw new NoAccessException("Только владелец вещи может подтверждать бронирование");
         }
-        if (!userService.existsById(userId)) {
+        if (!userRepository.existsById(userId)) {
             throw new NotFoundException("Пользователя с ID " + userId + " не существует");
         }
 
@@ -146,8 +145,6 @@ public class BookingServiceImpl implements BookingService {
         } else {
             booking.setStatus(BookingStatus.REJECTED);
             log.debug("Изменение статуса на {}", BookingStatus.REJECTED);
-            BookingDto bookingDto = BookingMapper.mapToBookingDto(repository.save(booking));
-            log.info("Отклонение бронирования завершено");
         }
         BookingDto bookingDto = BookingMapper.mapToBookingDto(repository.save(booking));
         log.info("Изменение статуса бронирования успешно завершено");
@@ -156,18 +153,20 @@ public class BookingServiceImpl implements BookingService {
 
     private boolean isOwner(Long userId, Booking booking) {
         log.debug("Проверяется, является ли пользователь с ID {} собственником", userId);
-        return booking.getItem().getOwner().getId().equals(userId);
+        Long ownerId = booking.getItem().getOwner().getId();
+        return ownerId.equals(userId);
     }
 
     private boolean isBooker(Long userId, Booking booking) {
         log.debug("Проверяется, является ли пользователь с ID {} инициатором бронирования", userId);
-        return booking.getBooker().getId().equals(userId);
+        Long bookerId = booking.getBooker().getId();
+        return bookerId.equals(userId);
     }
 
     private void isValid(NewBookingDtoRequest dtoRequest) {
         log.debug("Проверка валидности дат бронирования");
         if (dtoRequest.getEnd().isEqual(dtoRequest.getStart())) {
-            throw new ValidationException("Дата завершения бронирования не может быть равна дате его начала.");
+            throw new ValidationException("Дата и время завершения бронирования и начала не должны совпадать.");
         }
         if (dtoRequest.getEnd().isBefore(dtoRequest.getStart())) {
             throw new ValidationException("Дата и время завершения бронирования не может быть раньше начала " +
