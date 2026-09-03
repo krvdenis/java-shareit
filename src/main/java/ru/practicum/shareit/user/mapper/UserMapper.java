@@ -24,13 +24,12 @@ public final class UserMapper {
         return user;
     }
 
-    public static User patchUserFields(User user, PatchUserRequest patchUserRequest) {
+    public static void patchUserFields(User user, PatchUserRequest patchUserRequest) {
         if (patchUserRequest.hasUserName()) {
             user.setName(patchUserRequest.getName());
         }
         if (patchUserRequest.hasUserEmail()) {
             user.setEmail(patchUserRequest.getEmail());
         }
-        return user;
     }
 }
