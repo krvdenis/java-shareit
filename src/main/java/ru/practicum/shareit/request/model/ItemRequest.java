@@ -5,9 +5,12 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * TODO Sprint add-item-requests.
@@ -29,4 +32,6 @@ public class ItemRequest {
     private User requester;
     @Column(nullable = false)
     private LocalDateTime created;
+    @OneToMany(mappedBy = "request")
+    private List<Item> offeredItems  = new ArrayList<>();
 }

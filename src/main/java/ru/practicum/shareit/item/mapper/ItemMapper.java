@@ -5,8 +5,8 @@ import lombok.NoArgsConstructor;
 import ru.practicum.shareit.booking.dto.BookingDates;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.NewItemRequest;
-import ru.practicum.shareit.item.dto.PatchItemRequest;
+import ru.practicum.shareit.item.dto.NewItem;
+import ru.practicum.shareit.item.dto.PatchItem;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 
@@ -54,7 +54,7 @@ public final class ItemMapper {
         return dto;
     }
 
-    public static Item mapToItem(NewItemRequest newItemRequest) {
+    public static Item mapToItem(NewItem newItemRequest) {
         Item item = new Item();
         item.setName(newItemRequest.getName());
         item.setDescription(newItemRequest.getDescription());
@@ -62,7 +62,7 @@ public final class ItemMapper {
         return item;
     }
 
-    public static void patchItemFields(Item item, PatchItemRequest patchItemRequest) {
+    public static void patchItemFields(Item item, PatchItem patchItemRequest) {
         if (patchItemRequest.hasName()) {
             item.setName(patchItemRequest.getName());
         }

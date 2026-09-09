@@ -14,12 +14,14 @@ import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.NewCommentDto;
-import ru.practicum.shareit.item.dto.NewItemRequest;
-import ru.practicum.shareit.item.dto.PatchItemRequest;
+import ru.practicum.shareit.item.dto.NewItem;
+import ru.practicum.shareit.item.dto.PatchItem;
 import ru.practicum.shareit.item.mapper.CommentMapper;
 import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.request.ItemRequestRepository;
+import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.model.User;
 
@@ -42,15 +44,22 @@ public class ItemServiceImpl implements ItemService {
     private final CommentRepository commentRepository;
     private final BookingRepository bookingRepository;
     private final UserRepository userRepository;
+    private final ItemRequestRepository itemRequestRepository;
 
     @Override
     @Transactional
-    public ItemDto createItem(Long userId, NewItemRequest newItemDto) {
+    public ItemDto createItem(Long userId, NewItem newItemDto) {
         log.debug("Попытка зарегистрировать новую вещь: {}", newItemDto);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с ID " + userId + " не найден"));
         Item item = ItemMapper.mapToItem(newItemDto);
         item.setOwner(user);
+        if (newItemDto.getRequestId() != null) {
+            ItemRequest itemRequest = itemRequestRepository.findById(newItemDto.getRequestId())
+                    .orElseThrow(() -> new NotFoundException("Запрос с ID %d не найден"
+                            .formatted(newItemDto.getRequestId())));
+            item.setRequest(itemRequest);
+        }
         ItemDto itemDto = ItemMapper.mapToItemDto(itemRepository.save(item));
         log.info("Вещь {} успешно добавлена под ID {}", itemDto.getName(), itemDto.getId());
         return itemDto;
@@ -84,7 +93,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     @Transactional
-    public ItemDto patchItem(Long userId, Long itemId, PatchItemRequest newItem) {
+    public ItemDto patchItem(Long userId, Long itemId, PatchItem newItem) {
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("Item с ID %d не найден".formatted(itemId)));
 
