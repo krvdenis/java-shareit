@@ -43,6 +43,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
     @Override
     public List<ItemRequestDetailedDto> getItemRequestsByRequesterId(long requesterId) {
+        log.debug("Попытка получить список запросов, которые создал пользователь с ID: {}", requesterId);
         if (!userRepository.existsById(requesterId)) {
             throw new NotFoundException("Пользователь с ID %d не найден".formatted(requesterId));
         }
@@ -56,15 +57,15 @@ public class ItemRequestServiceImpl implements ItemRequestService {
                     return ItemRequestMapper.mapToDto(req, responses);
                 })
                 .collect(Collectors.toList());
+        log.info("Отправлен список из {} запросов", itemRequests.size());
         return dtos;
     }
 
     @Override
     public List<ItemRequestDto> getRequestsFromOthers(long userId) {
-        if (!userRepository.existsById(userId)) {
-            throw new NotFoundException("Пользователь с ID %d не найден".formatted(userId));
-        }
+        log.debug("Попытка получить список запросов, которые создали другие пользователи");
         List<ItemRequest> itemRequests = itemRequestRepository.findAllOtherItemRequests(userId);
+        log.info("Отправлен список из {} запросов", itemRequests.size());
         return itemRequests.stream()
                 .map(ItemRequestMapper::mapToDto)
                 .collect(Collectors.toList());
@@ -72,15 +73,18 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
     @Override
     public ItemRequestDetailedDto getItemRequestById(long userId, long itemRequestId) {
+        log.debug("Попытка получить запрос под ID: {},", itemRequestId);
         if (!userRepository.existsById(userId)) {
             throw new NotFoundException("Пользователь с ID %d не найден".formatted(userId));
         }
+
         ItemRequest itemRequest = itemRequestRepository.findAllByIdWithOffers(itemRequestId)
                 .orElseThrow(() -> new NotFoundException("Запрос с ID %d не найден".formatted(itemRequestId)));
         List<ResponseItemDto> responses = itemRequest.getOfferedItems().stream()
                 .map(ResponseItemMapper::mapToDto)
                 .collect(Collectors.toList());
         ItemRequestDetailedDto dto = ItemRequestMapper.mapToDto(itemRequest, responses);
+        log.info("Отправлен запрос {}", dto);
         return dto;
     }
 }
