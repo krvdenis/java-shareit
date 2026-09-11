@@ -2,6 +2,10 @@ package ru.practicum.shareit.booking;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.dto.BookingDto;
@@ -34,7 +38,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     @Transactional
-    public BookingDto createBookingRequest(Long userId, NewBookingRequestDto dtoRequest) {
+    public BookingDto createBookingRequest(long userId, NewBookingRequestDto dtoRequest) {
         log.debug("Попытка оформить новое бронирование: {}", dtoRequest);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с ID " + userId + " не найден"));
@@ -42,12 +46,13 @@ public class BookingServiceImpl implements BookingService {
                 .orElseThrow(() -> new NotFoundException("Item с ID %d не найден".formatted(dtoRequest.getItemId())));
         isValid(dtoRequest);
 
+        if (!item.getAvailable()) {
+            throw new BookingConflictException("Данная вещь недоступна для бронирования");
+        }
+
         long conflict = repository.countConflicts(dtoRequest.getItemId(), dtoRequest.getStart(), dtoRequest.getEnd());
         if (conflict > 0) {
             throw new BookingConflictException("Невозможно забронировать: на это время уже есть активная бронь");
-        }
-        if (!item.getAvailable()) {
-            throw new BookingConflictException("Данная вещь недоступна для бронирования");
         }
 
         Booking booking = BookingMapper.mapToBooking(dtoRequest, user, item);
@@ -57,7 +62,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public BookingDto getBookingById(Long userId, Long bookingId) {
+    public BookingDto getBookingById(long userId, long bookingId) {
         log.debug("Попытка получить информацию о бронировании с ID: {}", bookingId);
         Booking booking = repository.findById(bookingId)
                 .orElseThrow(() -> new NotFoundException("Бронирование с ID %d не найден".formatted(bookingId)));
@@ -72,24 +77,30 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingDto> getBookingsByBookerId(Long userId, State state) {
+    public List<BookingDto> getBookingsByBookerId(long userId, State state, Integer from, Integer size) {
         log.debug("Попытка получить список всех бронирований пользователем с ID:{}", userId);
         if (!userRepository.existsById(userId)) {
             throw new NotFoundException("Пользователя с ID " + userId + " не существует");
         }
 
-        List<Booking> bookings;
+        Sort sort = Sort.by("startTime").descending();
+        Pageable pageable = PageRequest.of(from, size, sort);
+
+        Page<Booking> bookingPage;
+
         switch (state) {
-            case ALL -> bookings = repository.findByBookerIdOrderByStartTimeDesc(userId);
-            case CURRENT -> bookings = repository.findCurrentBookingsByBookerId(userId);
-            case PAST -> bookings = repository.findPastByBookerId(userId);
-            case FUTURE -> bookings = repository.findFutureByBookerId(userId);
-            case WAITING -> bookings = repository.findByBookerIdAndStatusOrderByStartTimeDesc(userId, WAITING);
-            case REJECTED -> bookings = repository.findByBookerIdAndStatusOrderByStartTimeDesc(userId, REJECTED);
+            case ALL -> bookingPage = repository.findByBookerIdOrderByStartTimeDesc(userId, pageable);
+            case CURRENT -> bookingPage = repository.findCurrentBookingsByBookerId(userId, pageable);
+            case PAST -> bookingPage = repository.findPastByBookerId(userId, pageable);
+            case FUTURE -> bookingPage = repository.findFutureByBookerId(userId, pageable);
+            case WAITING -> bookingPage = repository.findByBookerIdAndStatusOrderByStartTimeDesc(userId, WAITING,
+                    pageable);
+            case REJECTED -> bookingPage = repository.findByBookerIdAndStatusOrderByStartTimeDesc(userId, REJECTED,
+                    pageable);
             default -> throw new ValidationException("Обработан неизвестный статус: " + state);
         }
 
-        List<BookingDto> bookingDtos = bookings.stream()
+        List<BookingDto> bookingDtos = bookingPage.getContent().stream()
                 .map(BookingMapper::mapToBookingDto)
                 .collect(Collectors.toList());
         log.info("Отправлен список из {} сущностей бронирования", bookingDtos.size());
@@ -97,7 +108,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingDto> getBookingsByOwnerId(Long ownerId, State state) {
+    public List<BookingDto> getBookingsByOwnerId(long ownerId, State state) {
         log.debug("Попытка получить список всех бронирований у пользователя с ID:{}", ownerId);
         if (!userRepository.existsById(ownerId)) {
             throw new NotFoundException("Пользователя с ID " + ownerId + " не существует");
@@ -123,7 +134,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     @Transactional
-    public BookingDto updateBookingStatus(Long userId, Long bookingId, Boolean status) {
+    public BookingDto updateBookingStatus(long userId, long bookingId, Boolean status) {
         log.debug("Попытка подтвердить бронирование с ID {} владельцем с ID {}", bookingId, userId);
         Booking booking = repository.findById(bookingId)
                 .orElseThrow(() -> new NotFoundException("Бронирование с ID %d не найден".formatted(bookingId)));
@@ -151,13 +162,13 @@ public class BookingServiceImpl implements BookingService {
         return bookingDto;
     }
 
-    private boolean isOwner(Long userId, Booking booking) {
+    private boolean isOwner(long userId, Booking booking) {
         log.debug("Проверяется, является ли пользователь с ID {} собственником", userId);
         Long ownerId = booking.getItem().getOwner().getId();
         return ownerId.equals(userId);
     }
 
-    private boolean isBooker(Long userId, Booking booking) {
+    private boolean isBooker(long userId, Booking booking) {
         log.debug("Проверяется, является ли пользователь с ID {} инициатором бронирования", userId);
         Long bookerId = booking.getBooker().getId();
         return bookerId.equals(userId);

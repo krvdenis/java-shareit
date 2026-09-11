@@ -48,7 +48,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     @Transactional
-    public ItemDto createItem(Long userId, NewItem newItemDto) {
+    public ItemDto createItem(long userId, NewItem newItemDto) {
         log.debug("Попытка зарегистрировать новую вещь: {}", newItemDto);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с ID " + userId + " не найден"));
@@ -67,7 +67,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     @Transactional
-    public CommentDto createCommentForItem(Long userId, Long itemId, NewCommentDto newCommentDto) {
+    public CommentDto createCommentForItem(long userId, long itemId, NewCommentDto newCommentDto) {
         log.debug("Попытка добавить новый отзыв: {}", newCommentDto);
         Comment comment = CommentMapper.mapToComment(newCommentDto);
         LocalDateTime now = LocalDateTime.now();
@@ -93,7 +93,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     @Transactional
-    public ItemDto patchItem(Long userId, Long itemId, PatchItem newItem) {
+    public ItemDto patchItem(long userId, long itemId, PatchItem newItem) {
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("Item с ID %d не найден".formatted(itemId)));
 
@@ -108,7 +108,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public ItemDto getItemById(Long userId, Long itemId) {
+    public ItemDto getItemById(long userId, long itemId) {
         log.debug("Попытка получить вещь: itemId={}", itemId);
         Item item = itemRepository.findByIdWithComments(itemId)
                 .orElseThrow(() -> new NotFoundException("Item с ID %d не найден".formatted(itemId)));
@@ -129,7 +129,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> getAllItems(Long userId) {
+    public List<ItemDto> getUserItems(long userId) {
         log.debug("Попытка получить список всех вещей пользователя с ID:{}", userId);
         LocalDateTime now = LocalDateTime.now();
         List<Item> items = itemRepository.findByOwnerId(userId);
@@ -137,7 +137,7 @@ public class ItemServiceImpl implements ItemService {
             return Collections.emptyList();
         }
         List<Long> itemIds = items.stream()
-                .map(item -> item.getId())
+                .map(Item::getId)
                 .collect(Collectors.toList());
         Map<Long, List<Comment>> commentsMap = commentRepository.findByItemIdWithItem(itemIds).stream()
                 .collect(Collectors.groupingBy(comment -> comment.getItem().getId()));
@@ -172,7 +172,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> searchItemByText(Long userId, String text) {
+    public List<ItemDto> searchItemByText(long userId, String text) {
         log.debug("Попытка найти список вещей по параметру: text={}", text);
         if (text == null || text.isBlank()) {
             return Collections.emptyList();

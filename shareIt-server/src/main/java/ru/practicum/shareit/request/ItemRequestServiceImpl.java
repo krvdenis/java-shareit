@@ -29,7 +29,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
     @Transactional
     @Override
-    public ItemRequestDto createItemRequest(Long userId, NewItemRequest newItemRequest) {
+    public ItemRequestDto createItemRequest(long userId, NewItemRequest newItemRequest) {
         log.debug("Попытка создать новый запрос на вещь: {}", newItemRequest);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с ID %d не найден".formatted(userId)));
@@ -42,10 +42,10 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     }
 
     @Override
-    public List<ItemRequestDetailedDto> getItemRequestsByRequesterId(Long requesterId) {
-//        if (!userRepository.existsById(requesterId)) {
-//            throw new NotFoundException("Пользователь с ID %d не найден".formatted(requesterId));
-//        }
+    public List<ItemRequestDetailedDto> getItemRequestsByRequesterId(long requesterId) {
+        if (!userRepository.existsById(requesterId)) {
+            throw new NotFoundException("Пользователь с ID %d не найден".formatted(requesterId));
+        }
 
         List<ItemRequest> itemRequests = itemRequestRepository.findAllByRequesterIdWithOffers(requesterId);
         List<ItemRequestDetailedDto> dtos = itemRequests.stream()
@@ -60,7 +60,10 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     }
 
     @Override
-    public List<ItemRequestDto> getRequestsFromOthers(Long userId) {
+    public List<ItemRequestDto> getRequestsFromOthers(long userId) {
+        if (!userRepository.existsById(userId)) {
+            throw new NotFoundException("Пользователь с ID %d не найден".formatted(userId));
+        }
         List<ItemRequest> itemRequests = itemRequestRepository.findAllOtherItemRequests(userId);
         return itemRequests.stream()
                 .map(ItemRequestMapper::mapToDto)
@@ -68,7 +71,10 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     }
 
     @Override
-    public ItemRequestDetailedDto getItemRequestById(Long userId, Long itemRequestId) {
+    public ItemRequestDetailedDto getItemRequestById(long userId, long itemRequestId) {
+        if (!userRepository.existsById(userId)) {
+            throw new NotFoundException("Пользователь с ID %d не найден".formatted(userId));
+        }
         ItemRequest itemRequest = itemRequestRepository.findAllByIdWithOffers(itemRequestId)
                 .orElseThrow(() -> new NotFoundException("Запрос с ID %d не найден".formatted(itemRequestId)));
         List<ResponseItemDto> responses = itemRequest.getOfferedItems().stream()

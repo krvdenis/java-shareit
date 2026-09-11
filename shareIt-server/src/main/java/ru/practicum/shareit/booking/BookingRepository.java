@@ -1,5 +1,7 @@
 package ru.practicum.shareit.booking;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -11,7 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface BookingRepository extends JpaRepository<Booking, Long> {
-    List<Booking> findByBookerIdOrderByStartTimeDesc(Long bookerId);
+    Page<Booking> findByBookerIdOrderByStartTimeDesc(Long bookerId, Pageable pageable);
 
     @Query("SELECT bng FROM Booking bng " +
             "WHERE bng.booker.id = :bookerId " +
@@ -19,23 +21,23 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             "AND bng.endTime >= CURRENT_TIMESTAMP " +
             "AND bng.status = APPROVED " +
             "ORDER BY bng.startTime DESC")
-    List<Booking> findCurrentBookingsByBookerId(@Param("bookerId") Long bookerId);
+    Page<Booking> findCurrentBookingsByBookerId(@Param("bookerId") Long bookerId, Pageable pageable);
 
     @Query("SELECT bng FROM Booking bng " +
             "WHERE bng.booker.id = :bookerId " +
             "AND bng.endTime < CURRENT_TIMESTAMP " +
             "AND bng.status = APPROVED " +
             "ORDER BY bng.startTime DESC")
-    List<Booking> findPastByBookerId(@Param("bookerId") Long bookerId);
+    Page<Booking> findPastByBookerId(@Param("bookerId") Long bookerId, Pageable pageable);
 
     @Query("SELECT bng FROM Booking bng " +
             "WHERE bng.booker.id = :bookerId " +
             "AND bng.startTime > CURRENT_TIMESTAMP " +
             "AND bng.status = APPROVED " +
             "ORDER BY bng.startTime DESC")
-    List<Booking> findFutureByBookerId(@Param("bookerId") Long bookerId);
+    Page<Booking> findFutureByBookerId(@Param("bookerId") Long bookerId, Pageable pageable);
 
-    List<Booking> findByBookerIdAndStatusOrderByStartTimeDesc(Long bookerId, State state);
+    Page<Booking> findByBookerIdAndStatusOrderByStartTimeDesc(Long bookerId, State state, Pageable pageable);
 
     List<Booking> findByItemOwnerIdOrderByStartTimeDesc(Long ownerId);
 

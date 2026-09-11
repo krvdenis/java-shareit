@@ -12,6 +12,7 @@ public final class ResponseItemMapper {
         ResponseItemDto dto = new ResponseItemDto();
         dto.setId(item.getId());
         dto.setName(item.getName());
+        dto.setOwnerId(item.getOwner().getId());
         return dto;
     }
 }

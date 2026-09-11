@@ -33,7 +33,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserDto patchUser(Long userId, PatchUserRequest newUser) {
+    public UserDto patchUser(long userId, PatchUserRequest newUser) {
         log.debug("Попытка внести изменения в данные пользователя {}", newUser);
         User user = repository.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь с ID " + userId
                 + " не найден"));
@@ -45,7 +45,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserDto> getAllUsers() {
+    public List<UserDto> getUsers() {
         log.debug("Попытка получить список всех пользователей");
         List<UserDto> usersDto = repository.findAll(Sort.by(Sort.Direction.ASC, "id")).stream()
                 .map(UserMapper::mapToUserDto)
@@ -55,7 +55,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto getUserById(Long userId) {
+    public UserDto getUserById(long userId) {
         log.debug("Попытка получить пользователя: userId={}", userId);
         User user = repository.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь с ID " + userId
                 + " не найден"));
@@ -64,7 +64,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void deleteUser(Long userId) {
+    public void deleteUser(long userId) {
         log.debug("Попытка удаления пользователя с ID: {}", userId);
         repository.deleteById(userId);
         log.info("Пользователь с ID: {} - удалён.", userId);

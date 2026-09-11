@@ -25,7 +25,7 @@ public class ItemRequestController {
 
     @PostMapping
     public ResponseEntity<Object> createItemRequest(@RequestHeader(X_SHARER_USER_ID) long userId,
-                                              @RequestBody @Valid NewItemRequestDto requestDto) {
+                                                    @RequestBody @Valid NewItemRequestDto requestDto) {
         log.info("Creating itemRequest {}, userId={}", requestDto, userId);
         return itemRequestClient.createItemRequest(userId, requestDto);
     }
@@ -44,7 +44,7 @@ public class ItemRequestController {
 
     @GetMapping("/{requestId}")
     public ResponseEntity<Object> getItemRequest(@RequestHeader(X_SHARER_USER_ID) long userId,
-                                                     @PathVariable Long requestId) {
+                                                 @PathVariable long requestId) {
         log.info("Get request {}, userId={}", requestId, userId);
         return itemRequestClient.getItemRequest(userId, requestId);
     }

@@ -3,13 +3,20 @@ package ru.practicum.shareit.booking;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import ru.practicum.shareit.booking.dto.BookItemRequestDto;
 import ru.practicum.shareit.booking.dto.BookingState;
 
@@ -44,7 +51,7 @@ public class BookingController {
 
     @GetMapping("/{bookingId}")
     public ResponseEntity<Object> getBooking(@RequestHeader(X_SHARER_USER_ID) long userId,
-                                             @PathVariable Long bookingId) {
+                                             @PathVariable long bookingId) {
         log.info("Get booking {}, userId={}", bookingId, userId);
         return bookingClient.getBooking(userId, bookingId);
     }
@@ -61,7 +68,7 @@ public class BookingController {
     @PatchMapping("/{bookingId}")
     public ResponseEntity<Object> patchBooking(@RequestHeader(X_SHARER_USER_ID) long userId,
                                                @RequestParam("approved") Boolean status,
-                                               @PathVariable Long bookingId) {
+                                               @PathVariable long bookingId) {
         log.info("Patching booking status {}, userId={}, bookingId={}", status, userId, bookingId);
         return bookingClient.patchBooking(userId, bookingId, status);
     }

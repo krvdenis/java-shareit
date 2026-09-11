@@ -6,6 +6,10 @@ import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.NewCommentDto;
 import ru.practicum.shareit.item.model.Comment;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class CommentMapper {
 
@@ -15,7 +19,10 @@ public final class CommentMapper {
         dto.setText(comment.getText());
         dto.setItemId(comment.getItem().getId());
         dto.setAuthorName(comment.getAuthor().getName());
-        dto.setCreated(comment.getCreated());
+        LocalDateTime rawCreated = comment.getCreated();
+        ZonedDateTime utcCreated = rawCreated.atZone(ZoneId.of("UTC"));
+        ZonedDateTime moscowCreated = utcCreated.withZoneSameInstant(ZoneId.of("Europe/Moscow"));
+        dto.setCreated(moscowCreated.toLocalDateTime());
         return dto;
     }
 

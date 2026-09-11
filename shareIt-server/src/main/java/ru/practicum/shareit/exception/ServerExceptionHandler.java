@@ -4,17 +4,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.stream.Collectors;
-
 @ControllerAdvice
 @Slf4j
-public class GlobalExceptionHandler {
+public class ServerExceptionHandler {
 
     @ExceptionHandler(ValidationException.class)
     public ResponseEntity<ErrorResponse> handleValidationException(ValidationException ex) {
@@ -48,18 +45,6 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleBookingConflictException(BookingConflictException ex) {
         log.warn("Попытка забронировать недоступную вещь: {}", ex.getMessage());
         ErrorResponse errorResponse = new ErrorResponse(ex.getMessage());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
-    }
-
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
-        String errorMessages = ex.getBindingResult()
-                .getFieldErrors()
-                .stream()
-                .map(fieldError -> fieldError.getField() + ": " + fieldError.getDefaultMessage())
-                .collect(Collectors.joining("; "));
-        log.warn("Ошибка валидации входящих данных: {}", errorMessages);
-        ErrorResponse errorResponse = new ErrorResponse(errorMessages);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 

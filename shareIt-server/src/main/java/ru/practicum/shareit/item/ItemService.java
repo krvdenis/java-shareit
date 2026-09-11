@@ -10,15 +10,15 @@ import java.util.List;
 
 public interface ItemService {
 
-    ItemDto createItem(Long userId, NewItem newItemDto);
+    ItemDto createItem(long userId, NewItem newItemDto);
 
-    ItemDto patchItem(Long userId, Long itemId, PatchItem newItem);
+    ItemDto patchItem(long userId, long itemId, PatchItem newItem);
 
-    ItemDto getItemById(Long userId, Long itemId);
+    ItemDto getItemById(long userId, long itemId);
 
-    List<ItemDto> getAllItems(Long userId);
+    List<ItemDto> getUserItems(long userId);
 
-    List<ItemDto> searchItemByText(Long userId, String text);
+    List<ItemDto> searchItemByText(long userId, String text);
 
-    CommentDto createCommentForItem(Long userId, Long itemId, NewCommentDto commentDto);
+    CommentDto createCommentForItem(long userId, long itemId, NewCommentDto commentDto);
 }
