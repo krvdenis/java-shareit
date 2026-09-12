@@ -6,10 +6,6 @@ import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.NewCommentDto;
 import ru.practicum.shareit.item.model.Comment;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class CommentMapper {
 

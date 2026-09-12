@@ -11,10 +11,6 @@ import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.model.User;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class BookingMapper {
 
@@ -31,14 +27,8 @@ public final class BookingMapper {
     public static BookingDto mapToBookingDto(Booking booking) {
         BookingDto dto = new BookingDto();
         dto.setId(booking.getId());
-        LocalDateTime rawStart = booking.getStartTime();
-        LocalDateTime rawEnd = booking.getEndTime();
-        ZonedDateTime utcStart = rawStart.atZone(ZoneId.of("UTC"));
-        ZonedDateTime utcEnd = rawEnd.atZone(ZoneId.of("UTC"));
-        ZonedDateTime moscowStart = utcStart.withZoneSameInstant(ZoneId.of("Europe/Moscow"));
-        ZonedDateTime moscowEnd = utcEnd.withZoneSameInstant(ZoneId.of("Europe/Moscow"));
-        dto.setStart(moscowStart.toLocalDateTime());
-        dto.setEnd(moscowEnd.toLocalDateTime());
+        dto.setStart(booking.getStartTime());
+        dto.setEnd(booking.getEndTime());
         dto.setItem(ItemMapper.mapToItemDto(booking.getItem()));
         dto.setBooker(UserMapper.mapToUserDto(booking.getBooker()));
         dto.setStatus(booking.getStatus());

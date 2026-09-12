@@ -18,13 +18,14 @@ import ru.practicum.shareit.item.dto.NewCommentDto;
 import ru.practicum.shareit.item.dto.NewItemRequestDto;
 import ru.practicum.shareit.item.dto.PatchItemRequestDto;
 
+import static ru.practicum.shareit.common.ApiHeaders.X_SHARER_USER_ID;
+
 @Controller
 @RequestMapping("/items")
 @RequiredArgsConstructor
 @Slf4j
 @Validated
 public class ItemController {
-    private static final String X_SHARER_USER_ID = "X-Sharer-User-Id";
     private final ItemClient itemClient;
 
     @PostMapping
