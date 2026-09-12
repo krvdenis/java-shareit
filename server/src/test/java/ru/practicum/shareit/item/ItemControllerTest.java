@@ -32,10 +32,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static ru.practicum.shareit.common.ApiHeaders.X_SHARER_USER_ID;
 
 @WebMvcTest(ItemController.class)
 class ItemControllerTest {
-    private static final String X_SHARER_USER_ID = "X-Sharer-User-Id";
     private static final String API_PREFIX = "/items";
     private static final long USER_ID = 1;
     private static final long ITEM_ID = 1;

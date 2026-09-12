@@ -21,12 +21,13 @@ import ru.practicum.shareit.item.dto.PatchItem;
 
 import java.util.List;
 
+import static ru.practicum.shareit.common.ApiHeaders.X_SHARER_USER_ID;
+
 @RestController
 @Slf4j
 @RequestMapping("/items")
 @RequiredArgsConstructor
 public class ItemController {
-    private static final String X_SHARER_USER_ID = "X-Sharer-User-Id";
     private final ItemService itemService;
 
     @PostMapping

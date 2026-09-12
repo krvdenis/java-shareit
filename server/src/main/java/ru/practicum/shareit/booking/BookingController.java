@@ -18,12 +18,13 @@ import ru.practicum.shareit.booking.dto.NewBookingRequestDto;
 
 import java.util.List;
 
+import static ru.practicum.shareit.common.ApiHeaders.X_SHARER_USER_ID;
+
 @RestController
 @Slf4j
 @RequestMapping(path = "/bookings")
 @RequiredArgsConstructor
 public class BookingController {
-    private static final String X_SHARER_USER_ID = "X-Sharer-User-Id";
     private final BookingService bookingService;
 
     @PostMapping

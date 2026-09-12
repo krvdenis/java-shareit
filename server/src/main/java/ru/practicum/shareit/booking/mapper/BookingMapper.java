@@ -20,14 +20,8 @@ public final class BookingMapper {
 
     public static Booking mapToBooking(NewBookingRequestDto dto, User user, Item item) {
         Booking booking = new Booking();
-        LocalDateTime rawStart = dto.getStart();
-        LocalDateTime rawEnd = dto.getEnd();
-        ZonedDateTime moscowStart = rawStart.atZone(ZoneId.of("Europe/Moscow"));
-        ZonedDateTime moscowEnd = rawEnd.atZone(ZoneId.of("Europe/Moscow"));
-        ZonedDateTime utcStart = moscowStart.withZoneSameInstant(ZoneId.of("UTC"));
-        ZonedDateTime utcEnd = moscowEnd.withZoneSameInstant(ZoneId.of("UTC"));
-        booking.setStartTime(utcStart.toLocalDateTime());
-        booking.setEndTime(utcEnd.toLocalDateTime());
+        booking.setStartTime(dto.getStart());
+        booking.setEndTime(dto.getEnd());
         booking.setStatus(BookingStatus.WAITING);
         booking.setBooker(user);
         booking.setItem(item);

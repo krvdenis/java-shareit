@@ -19,10 +19,7 @@ public final class CommentMapper {
         dto.setText(comment.getText());
         dto.setItemId(comment.getItem().getId());
         dto.setAuthorName(comment.getAuthor().getName());
-        LocalDateTime rawCreated = comment.getCreated();
-        ZonedDateTime utcCreated = rawCreated.atZone(ZoneId.of("UTC"));
-        ZonedDateTime moscowCreated = utcCreated.withZoneSameInstant(ZoneId.of("Europe/Moscow"));
-        dto.setCreated(moscowCreated.toLocalDateTime());
+        dto.setCreated(comment.getCreated());
         return dto;
     }
 

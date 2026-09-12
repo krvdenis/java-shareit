@@ -31,10 +31,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static ru.practicum.shareit.common.ApiHeaders.X_SHARER_USER_ID;
 
 @WebMvcTest(BookingController.class)
 class BookingControllerTest {
-    private static final String X_SHARER_USER_ID = "X-Sharer-User-Id";
     private static final String API_PREFIX = "/bookings";
     private static final long User_ID = 1;
     private static final long BOOKING_ID = 1;
