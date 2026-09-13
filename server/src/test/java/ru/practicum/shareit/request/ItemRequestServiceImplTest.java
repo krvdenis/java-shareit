@@ -52,7 +52,7 @@ class ItemRequestServiceImplTest {
         NewItemRequest newItemRequest2 = new NewItemRequest("Дрель");
         itemRequestDto = itemRequestService.createItemRequest(userId1, newItemRequest1);
         itemService.createItem(userId2, new NewItem("ads", "adsad", true,
-                itemRequestDto.getId() ));
+                itemRequestDto.getId()));
         itemRequestService.createItemRequest(userId1, newItemRequest2);
     }
 
@@ -72,7 +72,7 @@ class ItemRequestServiceImplTest {
     void getItemRequestsByRequesterId_whenUserNotExists_thenNotFoundExceptionThrown() {
         long wrongUserId = 25;
 
-       assertThrows(NotFoundException.class, () -> itemRequestService.getItemRequestsByRequesterId(wrongUserId));
+        assertThrows(NotFoundException.class, () -> itemRequestService.getItemRequestsByRequesterId(wrongUserId));
     }
 
     @Test
