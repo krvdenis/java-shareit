@@ -70,7 +70,7 @@ class ItemRequestServiceImplTest {
 
     @Test
     void getItemRequestsByRequesterId_whenUserNotExists_thenNotFoundExceptionThrown() {
-        long wrongUserId = 25;
+        long wrongUserId = Long.MAX_VALUE;
 
         assertThrows(NotFoundException.class, () -> itemRequestService.getItemRequestsByRequesterId(wrongUserId));
     }
