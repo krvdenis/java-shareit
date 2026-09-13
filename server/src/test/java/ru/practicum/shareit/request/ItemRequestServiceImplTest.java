@@ -30,42 +30,34 @@ class ItemRequestServiceImplTest {
     private ItemRequestService itemRequestService;
     @Autowired
     private ItemService itemService;
+
     private Long userId1;
     private Long userId2;
-    private ItemRequestDto itemRequestDto;
 
     @BeforeEach
     void setUp() {
         UserDto userDto1 = new UserDto();
         userDto1.setName("Denis");
         userDto1.setEmail("denis@mail.ru");
+        userId1 = userService.createUser(userDto1).getId();
+
         UserDto userDto2 = new UserDto();
         userDto2.setName("Irina");
         userDto2.setEmail("irina@mail.ru");
-
-        UserDto createdUser1 = userService.createUser(userDto1);
-        userId1 = createdUser1.getId();
-        UserDto createdUser2 = userService.createUser(userDto1);
-        userId2 = createdUser2.getId();
-
-        NewItemRequest newItemRequest1 = new NewItemRequest("Кулинарная книга");
-        NewItemRequest newItemRequest2 = new NewItemRequest("Дрель");
-        itemRequestDto = itemRequestService.createItemRequest(userId1, newItemRequest1);
-        itemService.createItem(userId2, new NewItem("ads", "adsad", true,
-                itemRequestDto.getId()));
-        itemRequestService.createItemRequest(userId1, newItemRequest2);
+        userId2 = userService.createUser(userDto2).getId();
     }
 
     @Test
     void getItemRequestsByRequesterId_whenUserExists_thenReturnedItemRequests() {
+        createRequest(userId1, "Кулинарная книга");
+        createRequest(userId1, "Дрель");
+
         List<ItemRequestDetailedDto> itemRequests = itemRequestService.getItemRequestsByRequesterId(userId1);
         itemRequests.sort(Comparator.comparing(ItemRequestDetailedDto::getId));
 
         assertThat(itemRequests).hasSize(2);
         assertThat(itemRequests.get(0).getDescription()).isEqualTo("Кулинарная книга");
         assertThat(itemRequests.get(1).getDescription()).isEqualTo("Дрель");
-        assertThat(itemRequests.get(0).getId()).isNotNull();
-        assertThat(itemRequests.get(1).getId()).isNotNull();
     }
 
     @Test
@@ -79,13 +71,16 @@ class ItemRequestServiceImplTest {
     void createItemRequest_whenInvoked_thenReturnedItemRequest() {
         NewItemRequest expectedItemRequest = new NewItemRequest("Молоток");
         ItemRequestDto actualItemRequest = itemRequestService.createItemRequest(userId1, expectedItemRequest);
+
         assertThat(actualItemRequest.getDescription()).isEqualTo(expectedItemRequest.getDescription());
         assertThat(actualItemRequest.getId()).isNotNull();
-
     }
 
     @Test
     void getRequestsFromOthers_whenInvoked_thenReturnedItemRequests() {
+        createRequest(userId1, "Кулинарная книга");
+        createRequest(userId1, "Дрель");
+
         NewItemRequest itemRequest = new NewItemRequest("Шуруповёрт");
         ItemRequestDto expectedItemRequest = itemRequestService.createItemRequest(userId2, itemRequest);
         List<ItemRequestDto> itemRequests = itemRequestService.getRequestsFromOthers(userId2);
@@ -97,8 +92,9 @@ class ItemRequestServiceImplTest {
 
     @Test
     void getItemRequestById_whenUserExists_thenReturnedItemRequest() {
-        long itemRequestId = itemRequestDto.getId();
-        ItemRequestDetailedDto actualItemRequest = itemRequestService.getItemRequestById(userId1, itemRequestId);
+        ItemRequestDto itemRequestDto = createRequestWithItem(userId1, userId2, "Кулинарная книга");
+
+        ItemRequestDetailedDto actualItemRequest = itemRequestService.getItemRequestById(userId1, itemRequestDto.getId());
 
         assertThat(actualItemRequest.getDescription()).isEqualTo(itemRequestDto.getDescription());
         assertThat(actualItemRequest.getId()).isEqualTo(itemRequestDto.getId());
@@ -107,8 +103,18 @@ class ItemRequestServiceImplTest {
     @Test
     void getItemRequestById_whenUserNotExists_thenNotFoundExceptionThrown() {
         long wrongUserId = 25;
-        long itemRequestId = itemRequestDto.getId();
+        ItemRequestDto itemRequestDto = createRequest(userId1, "Кулинарная книга");
 
-        assertThrows(NotFoundException.class, () -> itemRequestService.getItemRequestById(wrongUserId, itemRequestId));
+        assertThrows(NotFoundException.class, () -> itemRequestService.getItemRequestById(wrongUserId, itemRequestDto.getId()));
+    }
+
+    private ItemRequestDto createRequest(Long requesterId, String description) {
+        return itemRequestService.createItemRequest(requesterId, new NewItemRequest(description));
+    }
+
+    private ItemRequestDto createRequestWithItem(Long requesterId, Long ownerId, String description) {
+        ItemRequestDto request = createRequest(requesterId, description);
+        itemService.createItem(ownerId, new NewItem("ads", "adsad", true, request.getId()));
+        return request;
     }
 }

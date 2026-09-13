@@ -9,7 +9,11 @@ import ru.practicum.shareit.booking.BookingService;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.NewBookingRequestDto;
 import ru.practicum.shareit.exception.NoAccessException;
-import ru.practicum.shareit.item.dto.*;
+import ru.practicum.shareit.item.dto.CommentDto;
+import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.NewCommentDto;
+import ru.practicum.shareit.item.dto.NewItem;
+import ru.practicum.shareit.item.dto.PatchItem;
 import ru.practicum.shareit.user.UserService;
 import ru.practicum.shareit.user.dto.UserDto;
 
@@ -29,38 +33,29 @@ class ItemServiceImplTest {
     private UserService userService;
     @Autowired
     private BookingService bookingService;
+
     private long userId;
-    private NewItem newItem1;
-    private NewItem newItem2;
-    private ItemDto itemDto1;
-    private ItemDto itemDto2;
 
     @BeforeEach
-    void setUp() throws InterruptedException {
+    void setUp() {
         UserDto userDto = new UserDto();
         userDto.setName("Denis");
         userDto.setEmail("denis@mail.ru");
 
         UserDto createdUser = userService.createUser(userDto);
         userId = createdUser.getId();
-        newItem1 = new NewItem("Книга 1", "Описание 1", true, null);
-        newItem2 = new NewItem("Книга 2", "Описание 2", true, null);
-        itemDto1 = itemService.createItem(userId, newItem1);
-        itemDto2 = itemService.createItem(userId, newItem2);
-        NewBookingRequestDto newBooking1 = new NewBookingRequestDto(itemDto1.getId(), LocalDateTime.now(),
-                LocalDateTime.now().plusSeconds(1));
-        BookingDto booking = bookingService.createBookingRequest(userId, newBooking1);
-        bookingService.updateBookingStatus(userId, booking.getId(), true);
-        Thread.sleep(2000);
     }
 
     @Test
     void getUserItems_whenInvoked_thenReturnedItems() {
+        createItem(userId, "Книга 1", "Описание 1");
+        createItem(userId, "Книга 2", "Описание 2");
+
         List<ItemDto> items = itemService.getUserItems(userId);
 
         assertThat(items).hasSize(2);
-        assertThat(items.get(0).getName()).isEqualTo(newItem1.getName());
-        assertThat(items.get(1).getName()).isEqualTo(newItem2.getName());
+        assertThat(items.get(0).getName()).isEqualTo("Книга 1");
+        assertThat(items.get(1).getName()).isEqualTo("Книга 2");
         assertThat(items.get(0).getId()).isNotNull();
         assertThat(items.get(1).getId()).isNotNull();
     }
@@ -76,49 +71,64 @@ class ItemServiceImplTest {
     }
 
     @Test
-    void createCommentForItem_whenInvoked_thenReturnedComment() {
+    void createCommentForItem_whenInvoked_thenReturnedComment() throws InterruptedException {
+        ItemDto itemDto = createItem(userId, "Книга 1", "Описание 1");
+
+        NewBookingRequestDto newBooking = new NewBookingRequestDto(
+                itemDto.getId(),
+                LocalDateTime.now(),
+                LocalDateTime.now().plusNanos(50_000_000)
+        );
+        BookingDto booking = bookingService.createBookingRequest(userId, newBooking);
+        bookingService.updateBookingStatus(userId, booking.getId(), true);
+
+        Thread.sleep(100);
+
         NewCommentDto newCommentDto = new NewCommentDto("Хорошая книга");
+        CommentDto actualComment = itemService.createCommentForItem(userId, itemDto.getId(), newCommentDto);
 
-        CommentDto actualComment = itemService.createCommentForItem(userId, itemDto1.getId(), newCommentDto);
-
-        assertThat(actualComment.getItemId()).isEqualTo(itemDto1.getId());
+        assertThat(actualComment.getItemId()).isEqualTo(itemDto.getId());
         assertThat(actualComment.getText()).isEqualTo(newCommentDto.getText());
     }
 
     @Test
     void patchItem_whenOwnerInvoked_thenReturnedNewItem() {
+        ItemDto itemDto = createItem(userId, "Книга 1", "Описание 1");
         PatchItem patchItem = new PatchItem("Книга 4", "Описание 4", false);
 
-        ItemDto actualItem = itemService.patchItem(userId, itemDto1.getId(), patchItem);
+        ItemDto actualItem = itemService.patchItem(userId, itemDto.getId(), patchItem);
 
         assertThat(actualItem.getName()).isEqualTo(patchItem.getName());
         assertThat(actualItem.getDescription()).isEqualTo(patchItem.getDescription());
         assertThat(actualItem.getAvailable()).isEqualTo(patchItem.getAvailable());
-        assertThat(actualItem.getId()).isEqualTo(itemDto1.getId());
+        assertThat(actualItem.getId()).isEqualTo(itemDto.getId());
     }
 
     @Test
     void patchItem_whenNotOwnerInvoked_thenNoAccessExceptionThrown() {
+        ItemDto itemDto = createItem(userId, "Книга 1", "Описание 1");
         PatchItem patchItem = new PatchItem("Книга 4", "Описание 4", false);
         long wrongUserId = 25;
 
-        assertThrows(NoAccessException.class, () -> itemService.patchItem(wrongUserId, itemDto1.getId(), patchItem));
+        assertThrows(NoAccessException.class, () -> itemService.patchItem(wrongUserId, itemDto.getId(), patchItem));
     }
 
     @Test
     void getItemById_whenInvoked_thenReturnedItem() {
-        long itemId = itemDto1.getId();
+        ItemDto itemDto = createItem(userId, "Книга 1", "Описание 1");
 
-        ItemDto actualItem = itemService.getItemById(userId, itemId);
+        ItemDto actualItem = itemService.getItemById(userId, itemDto.getId());
 
-        assertThat(actualItem.getName()).isEqualTo(itemDto1.getName());
-        assertThat(actualItem.getDescription()).isEqualTo(itemDto1.getDescription());
-        assertThat(actualItem.getAvailable()).isEqualTo(itemDto1.getAvailable());
-        assertThat(actualItem.getId()).isEqualTo(itemDto1.getId());
+        assertThat(actualItem.getName()).isEqualTo(itemDto.getName());
+        assertThat(actualItem.getDescription()).isEqualTo(itemDto.getDescription());
+        assertThat(actualItem.getAvailable()).isEqualTo(itemDto.getAvailable());
+        assertThat(actualItem.getId()).isEqualTo(itemDto.getId());
     }
 
     @Test
     void searchItemByText_whenInvoked_thenReturnedItems() {
+        createItem(userId, "Книга 1", "Описание 1");
+        ItemDto itemDto2 = createItem(userId, "Книга 2", "Описание 2");
         String text = "Описание 2";
 
         List<ItemDto> items = itemService.searchItemByText(userId, text);
@@ -127,5 +137,10 @@ class ItemServiceImplTest {
         assertThat(items.getFirst().getDescription()).isEqualTo(text);
         assertThat(items.getFirst().getName()).isEqualTo(itemDto2.getName());
         assertThat(items.getFirst().getId()).isEqualTo(itemDto2.getId());
+    }
+
+    private ItemDto createItem(long ownerId, String name, String description) {
+        NewItem newItem = new NewItem(name, description, true, null);
+        return itemService.createItem(ownerId, newItem);
     }
 }

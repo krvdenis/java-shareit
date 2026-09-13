@@ -24,19 +24,16 @@ class UserServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        userDto1 = new UserDto();
-        userDto1.setName("Denis");
-        userDto1.setEmail("denis@mail.ru");
-        UserDto userDto2 = new UserDto();
-        userDto2.setName("Ivan");
-        userDto2.setEmail("Ivan@mail.ru");
-
-        userDto1 = userService.createUser(userDto1);
-        userService.createUser(userDto2);
+        UserDto dto = new UserDto();
+        dto.setName("Denis");
+        dto.setEmail("denis@mail.ru");
+        userDto1 = userService.createUser(dto);
     }
 
     @Test
     void getUsers_whenInvoked_thenReturnedUsers() {
+        createUser("Ivan", "Ivan@mail.ru");
+
         List<UserDto> users = userService.getUsers();
 
         assertThat(users).hasSize(2);
@@ -91,5 +88,12 @@ class UserServiceImplTest {
         assertThat(actualUser.getName()).isEqualTo(patchUserRequest.getName());
         assertThat(actualUser.getEmail()).isEqualTo(patchUserRequest.getEmail());
         assertThat(actualUser.getId()).isNotNull();
+    }
+
+    private void createUser(String name, String email) {
+        UserDto dto = new UserDto();
+        dto.setName(name);
+        dto.setEmail(email);
+        userService.createUser(dto);
     }
 }

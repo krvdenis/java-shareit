@@ -50,24 +50,13 @@ class BookingControllerTest {
     @BeforeAll
     static void setUp() {
         request = new NewBookingRequestDto(1L,
-                LocalDateTime.of(26, 12, 12, 12, 12),
-                LocalDateTime.of(27, 1, 1, 1, 1));
-        ItemDto item = new ItemDto();
-        item.setId(1L);
-        item.setName("adsad");
-        item.setDescription("dasdasdwd");
-        item.setAvailable(true);
-        UserDto booker = new UserDto(
-                1L,
-                "asdadasd",
-                "asdadasd.mail.ru");
-        response = new BookingDto();
-        response.setId(1L);
-        response.setStart(request.getStart());
-        response.setEnd(request.getEnd());
-        response.setItem(item);
-        response.setBooker(booker);
-        response.setStatus(BookingStatus.WAITING);
+                LocalDateTime.of(2026, 12, 12, 12, 12),
+                LocalDateTime.of(2027, 1, 1, 1, 1));
+
+        ItemDto item = createItemDto(1L, "adsad", "dasdasdwd", true);
+        UserDto booker = new UserDto(1L, "asdadasd", "asdadasd.mail.ru");
+
+        response = createBookingDto(1L, request.getStart(), request.getEnd(), item, booker, BookingStatus.WAITING);
     }
 
     @Test
@@ -224,5 +213,25 @@ class BookingControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()", is(0)));
+    }
+
+    private static ItemDto createItemDto(Long id, String name, String description, boolean available) {
+        ItemDto dto = new ItemDto();
+        dto.setId(id);
+        dto.setName(name);
+        dto.setDescription(description);
+        dto.setAvailable(available);
+        return dto;
+    }
+
+    private static BookingDto createBookingDto(Long id, LocalDateTime start, LocalDateTime end, ItemDto item, UserDto booker, BookingStatus status) {
+        BookingDto dto = new BookingDto();
+        dto.setId(id);
+        dto.setStart(start);
+        dto.setEnd(end);
+        dto.setItem(item);
+        dto.setBooker(booker);
+        dto.setStatus(status);
+        return dto;
     }
 }

@@ -52,12 +52,9 @@ class ItemControllerTest {
     @BeforeAll
     static void setUp() {
         request = new NewItem("adsad", "dasdasdwd", false, null);
-        response = new ItemDto();
-        response.setId(1L);
-        response.setName(request.getName());
-        response.setDescription(request.getDescription());
-        response.setAvailable(request.getAvailable());
         requestComment = new NewCommentDto("asdad");
+
+        response = createItemDto(1L, request.getName(), request.getDescription(), request.getAvailable());
     }
 
     @Test
@@ -94,15 +91,15 @@ class ItemControllerTest {
 
     @Test
     void createCommentForItem_whenBookingComplete_thenReturnedComment() throws Exception {
-        CommentDto response = new CommentDto();
-        response.setId(1L);
-        response.setText(requestComment.getText());
-        response.setItemId(1L);
-        response.setAuthorName("Adasd");
-        response.setCreated(LocalDateTime.now());
+        CommentDto responseComment = new CommentDto();
+        responseComment.setId(1L);
+        responseComment.setText(requestComment.getText());
+        responseComment.setItemId(1L);
+        responseComment.setAuthorName("Adasd");
+        responseComment.setCreated(LocalDateTime.now());
 
         when(itemService.createCommentForItem(anyLong(), anyLong(), any()))
-                .thenReturn(response);
+                .thenReturn(responseComment);
 
         mvc.perform(post(API_PREFIX + "/{itemId}/comment", 1)
                         .header(X_SHARER_USER_ID, USER_ID)
@@ -111,10 +108,10 @@ class ItemControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id", is(response.getId()), Long.class))
-                .andExpect(jsonPath("$.text", is(response.getText()), String.class))
-                .andExpect(jsonPath("$.itemId", is(response.getItemId()), Long.class))
-                .andExpect(jsonPath("$.authorName", is(response.getAuthorName()), String.class))
+                .andExpect(jsonPath("$.id", is(responseComment.getId()), Long.class))
+                .andExpect(jsonPath("$.text", is(responseComment.getText()), String.class))
+                .andExpect(jsonPath("$.itemId", is(responseComment.getItemId()), Long.class))
+                .andExpect(jsonPath("$.authorName", is(responseComment.getAuthorName()), String.class))
                 .andExpect(jsonPath("$.created", notNullValue()));
     }
 
@@ -137,7 +134,6 @@ class ItemControllerTest {
     @Test
     void patch_WhenItemFound_thenReturnedUpdatedItem() throws Exception {
         PatchItem patchItem = new PatchItem("ads", "asdad", true);
-
 
         when(itemService.patchItem(anyLong(), anyLong(), any()))
                 .thenReturn(response);
@@ -209,5 +205,14 @@ class ItemControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()", is(0)));
+    }
+
+    private static ItemDto createItemDto(Long id, String name, String description, boolean available) {
+        ItemDto dto = new ItemDto();
+        dto.setId(id);
+        dto.setName(name);
+        dto.setDescription(description);
+        dto.setAvailable(available);
+        return dto;
     }
 }
