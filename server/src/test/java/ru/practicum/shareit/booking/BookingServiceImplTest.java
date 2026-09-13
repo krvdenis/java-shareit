@@ -249,9 +249,10 @@ class BookingServiceImplTest {
 
     @Test
     void createBookingRequest_whenStartEqualsEnd_thenValidationExceptionThrown() {
+        LocalDateTime now = LocalDateTime.now();
         NewBookingRequestDto newBooking = newBooking1 = new NewBookingRequestDto(wrongId,
-                LocalDateTime.now(),
-                LocalDateTime.now());
+                now,
+                now);
 
         assertThrows(ValidationException.class, () -> bookingService.createBookingRequest(userId, newBooking));
     }

@@ -58,7 +58,6 @@ class ItemControllerTest {
         response.setDescription(request.getDescription());
         response.setAvailable(request.getAvailable());
         requestComment = new NewCommentDto("asdad");
-
     }
 
     @Test

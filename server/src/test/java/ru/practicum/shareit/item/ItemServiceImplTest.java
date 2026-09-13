@@ -34,7 +34,6 @@ class ItemServiceImplTest {
     private NewItem newItem2;
     private ItemDto itemDto1;
     private ItemDto itemDto2;
-    private NewBookingRequestDto newBooking1;
 
     @BeforeEach
     void setUp() throws InterruptedException {
@@ -48,7 +47,7 @@ class ItemServiceImplTest {
         newItem2 = new NewItem("Книга 2", "Описание 2", true, null);
         itemDto1 = itemService.createItem(userId, newItem1);
         itemDto2 = itemService.createItem(userId, newItem2);
-        newBooking1 = new NewBookingRequestDto(itemDto1.getId(), LocalDateTime.now(),
+        NewBookingRequestDto newBooking1 = new NewBookingRequestDto(itemDto1.getId(), LocalDateTime.now(),
                 LocalDateTime.now().plusSeconds(1));
         BookingDto booking = bookingService.createBookingRequest(userId, newBooking1);
         bookingService.updateBookingStatus(userId, booking.getId(), true);
