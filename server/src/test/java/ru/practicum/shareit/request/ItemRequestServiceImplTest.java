@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.item.ItemService;
+import ru.practicum.shareit.item.dto.NewItem;
 import ru.practicum.shareit.request.dto.ItemRequestDetailedDto;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.request.dto.NewItemRequest;
@@ -26,6 +28,8 @@ class ItemRequestServiceImplTest {
     private UserService userService;
     @Autowired
     private ItemRequestService itemRequestService;
+    @Autowired
+    private ItemService itemService;
     private Long userId1;
     private Long userId2;
     private ItemRequestDto itemRequestDto;
@@ -47,6 +51,8 @@ class ItemRequestServiceImplTest {
         NewItemRequest newItemRequest1 = new NewItemRequest("Кулинарная книга");
         NewItemRequest newItemRequest2 = new NewItemRequest("Дрель");
         itemRequestDto = itemRequestService.createItemRequest(userId1, newItemRequest1);
+        itemService.createItem(userId2, new NewItem("ads", "adsad", true,
+                itemRequestDto.getId() ));
         itemRequestService.createItemRequest(userId1, newItemRequest2);
     }
 

@@ -146,7 +146,9 @@
                                             <limit>
                                                 <counter>CLASS</counter>
                                                 <value>MISSEDCOUNT</value>
-                                                <maximum>3</maximum>
+                                                <maximum>2</maximum>
+                                                <!--Поменял на 2 из-за того, что класс с константой заголовка никак-->
+                                                <!--не отмечается покрытым тестом&ndash;&gt;-->
                                             </limit>
                                         </limits>
                                     </rule>
