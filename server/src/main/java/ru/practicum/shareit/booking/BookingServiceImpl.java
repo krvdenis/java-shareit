@@ -93,10 +93,11 @@ public class BookingServiceImpl implements BookingService {
             case CURRENT -> bookingPage = repository.findCurrentBookingsByBookerId(userId, pageable);
             case PAST -> bookingPage = repository.findPastByBookerId(userId, pageable);
             case FUTURE -> bookingPage = repository.findFutureByBookerId(userId, pageable);
-            case WAITING -> bookingPage = repository.findByBookerIdAndStatusOrderByStartTimeDesc(userId, WAITING,
+            case WAITING -> bookingPage = repository.findByBookerIdAndStatusOrderByStartTimeDesc(userId,
+                    BookingStatus.WAITING,
                     pageable);
-            case REJECTED -> bookingPage = repository.findByBookerIdAndStatusOrderByStartTimeDesc(userId, REJECTED,
-                    pageable);
+            case REJECTED -> bookingPage = repository.findByBookerIdAndStatusOrderByStartTimeDesc(userId,
+                    BookingStatus.REJECTED, pageable);
             default -> throw new ValidationException("Обработан неизвестный статус: " + state);
         }
 
@@ -120,8 +121,10 @@ public class BookingServiceImpl implements BookingService {
             case CURRENT -> bookings = repository.findCurrentBookingsByOwnerId(ownerId);
             case PAST -> bookings = repository.findPastByOwnerId(ownerId);
             case FUTURE -> bookings = repository.findFutureByOwnerId(ownerId);
-            case WAITING -> bookings = repository.findByItemOwnerIdAndStatusOrderByStartTimeDesc(ownerId, WAITING);
-            case REJECTED -> bookings = repository.findByItemOwnerIdAndStatusOrderByStartTimeDesc(ownerId, REJECTED);
+            case WAITING -> bookings = repository.findByItemOwnerIdAndStatusOrderByStartTimeDesc(ownerId,
+                    BookingStatus.WAITING);
+            case REJECTED -> bookings = repository.findByItemOwnerIdAndStatusOrderByStartTimeDesc(ownerId,
+                    BookingStatus.REJECTED);
             default -> throw new ValidationException("Обработан неизвестный статус: " + state);
         }
 

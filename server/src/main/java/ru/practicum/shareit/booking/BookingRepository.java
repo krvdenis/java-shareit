@@ -37,7 +37,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             "ORDER BY bng.startTime DESC")
     Page<Booking> findFutureByBookerId(@Param("bookerId") Long bookerId, Pageable pageable);
 
-    Page<Booking> findByBookerIdAndStatusOrderByStartTimeDesc(Long bookerId, State state, Pageable pageable);
+    Page<Booking> findByBookerIdAndStatusOrderByStartTimeDesc(Long bookerId, BookingStatus status, Pageable pageable);
 
     List<Booking> findByItemOwnerIdOrderByStartTimeDesc(Long ownerId);
 
@@ -66,7 +66,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             "ORDER BY bng.startTime DESC")
     List<Booking> findFutureByOwnerId(@Param("ownerId") Long ownerId);
 
-    List<Booking> findByItemOwnerIdAndStatusOrderByStartTimeDesc(Long ownerId, State state);
+    List<Booking> findByItemOwnerIdAndStatusOrderByStartTimeDesc(Long ownerId, BookingStatus status);
 
     @Query("SELECT NEW ru.practicum.shareit.booking.dto.BookingDates(i.id, b.startTime, b.endTime) " +
             "FROM Booking b " +

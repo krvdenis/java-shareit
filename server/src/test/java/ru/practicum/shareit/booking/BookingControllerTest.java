@@ -91,6 +91,34 @@ class BookingControllerTest {
     }
 
     @Test
+    void bookItem_whenItemNotExists_thenNotFoundExceptionThrown() throws Exception {
+        when(bookingService.createBookingRequest(anyLong(), any()))
+                .thenThrow(new NotFoundException("Данная вещь не существует"));
+
+        mvc.perform(post(API_PREFIX)
+                        .header(X_SHARER_USER_ID, User_ID)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .content(mapper.writeValueAsString(request))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void bookItem_whenUserNotExists_thenNotFoundExceptionThrown() throws Exception {
+        when(bookingService.createBookingRequest(anyLong(), any()))
+                .thenThrow(new NotFoundException("Данный пользователь не существует"));
+
+        mvc.perform(post(API_PREFIX)
+                        .header(X_SHARER_USER_ID, User_ID)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .content(mapper.writeValueAsString(request))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
     void bookItem_whenItemAvailableAndExistsActiveBookingForThatTime_thenBookingConflictExceptionThrown() throws Exception {
         when(bookingService.createBookingRequest(anyLong(), any()))
                 .thenThrow(new BookingConflictException("На это время уже есть бронь"));
@@ -191,7 +219,7 @@ class BookingControllerTest {
         when(bookingService.getBookingsByOwnerId(anyLong(), any()))
                 .thenReturn(Collections.emptyList());
 
-        mvc.perform(get(API_PREFIX + "?state={state}", State.ALL)
+        mvc.perform(get(API_PREFIX + "/owner?state={state}", State.ALL)
                         .header(X_SHARER_USER_ID, User_ID)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
