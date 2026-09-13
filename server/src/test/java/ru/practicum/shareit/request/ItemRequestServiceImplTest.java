@@ -105,7 +105,8 @@ class ItemRequestServiceImplTest {
         long wrongUserId = 25;
         ItemRequestDto itemRequestDto = createRequest(userId1, "Кулинарная книга");
 
-        assertThrows(NotFoundException.class, () -> itemRequestService.getItemRequestById(wrongUserId, itemRequestDto.getId()));
+        assertThrows(NotFoundException.class, () -> itemRequestService.getItemRequestById(wrongUserId,
+                itemRequestDto.getId()));
     }
 
     private ItemRequestDto createRequest(Long requesterId, String description) {
