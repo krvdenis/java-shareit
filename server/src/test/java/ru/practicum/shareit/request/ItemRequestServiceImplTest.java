@@ -102,7 +102,7 @@ class ItemRequestServiceImplTest {
 
     @Test
     void getItemRequestById_whenUserNotExists_thenNotFoundExceptionThrown() {
-        long wrongUserId = 25;
+        long wrongUserId = 9999999;
         ItemRequestDto itemRequestDto = createRequest(userId1, "Кулинарная книга");
 
         assertThrows(NotFoundException.class, () -> itemRequestService.getItemRequestById(wrongUserId,
