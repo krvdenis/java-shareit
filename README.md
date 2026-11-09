@@ -20,3 +20,4 @@ git clone git@github.com:krvdenis/java-shareit.git
 cd java-shareit
 docker compose up --build
 ```
+После успешного старта сервис будет доступен по адресу: `http://localhost:8080`
